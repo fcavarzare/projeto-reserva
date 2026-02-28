@@ -1,4 +1,3 @@
-# Force refresh for ArgoCD
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,12 +27,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       initContainers:
       - name: wait-for-deps
-<<<<<<< HEAD
         image: alpine:latest
-=======
-<<<<<<< HEAD
-        image: fcavarzare/projeto-reserva:identity-api-887a7ecabe0dfc46aa6cceba9656e273dca2933c
->>>>>>> dc2184595cecd4bd6f3cd8d8c4d2adb0a89715ef
         command: ['sh', '-c', 'until nc -z -w 2 sqlserver-service 1433; do echo waiting for sqlserver; sleep 2; done;']
         resources:
           limits:
@@ -45,6 +39,7 @@ spec:
       containers:
       - name: identity-api
         image: fcavarzare/projeto-reserva:identity-api-latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
