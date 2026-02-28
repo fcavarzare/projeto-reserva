@@ -78,7 +78,7 @@ public class ReservationsController : ControllerBase
         
         var m2 = new Booking.Domain.Entities.Movie(
             "Interestelar", 
-            "https://m.media-amazon.com/images/M/MV5BYzdjMDAxZGItMTI2My00MGUwLWFjN2ItZWgwOWBkZjI1MWJjXkEyXkFqcGc@._V1_SX300.jpg", 
+            "https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg", 
             "Uma equipe de exploradores viaja através de um buraco de minhoca no espaço para salvar a humanidade.");
         
         var m3 = new Booking.Domain.Entities.Movie(
