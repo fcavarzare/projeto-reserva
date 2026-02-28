@@ -22,7 +22,7 @@ builder.Services.AddDbContext<BookingDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 2. Redis (Distributed Lock)
-var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "booking-redis:6379";
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp => 
 {
     var config = ConfigurationOptions.Parse(redisConnectionString);
@@ -37,7 +37,7 @@ builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host(builder.Configuration.GetConnectionString("RabbitMQ") ?? "rabbitmq", "/", h => {
+        cfg.Host(builder.Configuration.GetConnectionString("RabbitMQ") ?? "booking-rabbitmq", "/", h => {
             h.Username("guest");
             h.Password("guest");
         });
