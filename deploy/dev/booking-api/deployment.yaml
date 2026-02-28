@@ -30,7 +30,7 @@ spec:
       initContainers:
       - name: wait-for-deps
         image: alpine:latest
-        command: ['sh', '-c', 'until nc -z -w 2 sqlserver-service 1433 && nc -z -w 2 rabbitmq-service 5672; do echo waiting for sqlserver and rabbitmq; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z -w 2 100.100.100.104 1433 && nc -z -w 2 rabbitmq-service 5672; do echo waiting for sqlserver and rabbitmq; sleep 2; done;']
         resources:
           limits:
             cpu: "50m"
@@ -46,7 +46,7 @@ spec:
         - containerPort: 8080
         env:
         - name: ConnectionStrings__DefaultConnection
-          value: "Server=sqlserver-service;Database=BookingDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
+          value: "Server=100.100.100.104;Database=BookingDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
         - name: ConnectionStrings__Redis
           value: "redis-service:6379"
         - name: ExternalServices__PaymentApi

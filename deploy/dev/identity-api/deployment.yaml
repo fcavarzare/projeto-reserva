@@ -28,7 +28,7 @@ spec:
       initContainers:
       - name: wait-for-deps
         image: alpine:latest
-        command: ['sh', '-c', 'until nc -z -w 2 sqlserver-service 1433; do echo waiting for sqlserver; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z -w 2 100.100.100.104 1433; do echo waiting for sqlserver; sleep 2; done;']
         resources:
           limits:
             cpu: "50m"
@@ -44,7 +44,7 @@ spec:
         - containerPort: 8080
         env:
         - name: ConnectionStrings__IdentityDbContext
-          value: "Server=sqlserver-service;Database=IdentityDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
+          value: "Server=100.100.100.104;Database=IdentityDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
         resources:
           limits:
             cpu: "200m"
