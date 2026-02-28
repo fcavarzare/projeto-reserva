@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "UMMiaskto3o=",
+  "dgSpecHash": "ovV9Rw5HocY=",
   "success": true,
-  "projectFilePath": "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\Services\\Identity\\Identity.API\\Identity.API.csproj",
+  "projectFilePath": "C:\\APPs - DEVOPS\\projeto-reserva\\src\\Services\\Identity\\Identity.API\\Identity.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\fernandocavarzare\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\fernandocavarzare\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

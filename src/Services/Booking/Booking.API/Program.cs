@@ -12,6 +12,9 @@ using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
 
+using MassTransit;
+using Booking.Application.Contracts;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Database (SQL Server)
@@ -27,6 +30,18 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     config.ConnectTimeout = 10000;
     config.AbortOnConnectFail = false;
     return ConnectionMultiplexer.Connect(config);
+});
+
+// 2.1 MassTransit (RabbitMQ)
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(builder.Configuration.GetConnectionString("RabbitMQ") ?? "rabbitmq", "/", h => {
+            h.Username("guest");
+            h.Password("guest");
+        });
+    });
 });
 
 // 3. Autenticacao JWT

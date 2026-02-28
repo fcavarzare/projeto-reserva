@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "AmxmGUJL+3I=",
+  "dgSpecHash": "cJTlYO5xXSk=",
   "success": true,
-  "projectFilePath": "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\Services\\Booking\\Booking.Domain\\Booking.Domain.csproj",
+  "projectFilePath": "C:\\APPs - DEVOPS\\projeto-reserva\\src\\Services\\Booking\\Booking.Domain\\Booking.Domain.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

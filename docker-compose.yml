@@ -26,6 +26,15 @@ services:
     networks:
       - cinema-network
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: booking-rabbitmq
+    ports:
+      - "5672:5672"   # Porta do protocolo AMQP
+      - "15672:15672" # Porta da interface web de gerência (User: guest / Pass: guest)
+    networks:
+      - cinema-network
+
   identity-api:
     build:
       context: .

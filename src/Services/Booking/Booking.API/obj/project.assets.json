@@ -4233,11 +4233,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\Services\\Booking\\Booking.API\\Booking.API.csproj",
+      "projectUniqueName": "C:\\APPs - DEVOPS\\projeto-reserva\\src\\Services\\Booking\\Booking.API\\Booking.API.csproj",
       "projectName": "Booking.API",
-      "projectPath": "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\Services\\Booking\\Booking.API\\Booking.API.csproj",
+      "projectPath": "C:\\APPs - DEVOPS\\projeto-reserva\\src\\Services\\Booking\\Booking.API\\Booking.API.csproj",
       "packagesPath": "C:\\Users\\fernandocavarzare\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\Services\\Booking\\Booking.API\\obj\\",
+      "outputPath": "C:\\APPs - DEVOPS\\projeto-reserva\\src\\Services\\Booking\\Booking.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -4258,11 +4258,11 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\Services\\Booking\\Booking.Application\\Booking.Application.csproj": {
-              "projectPath": "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\Services\\Booking\\Booking.Application\\Booking.Application.csproj"
+            "C:\\APPs - DEVOPS\\projeto-reserva\\src\\Services\\Booking\\Booking.Application\\Booking.Application.csproj": {
+              "projectPath": "C:\\APPs - DEVOPS\\projeto-reserva\\src\\Services\\Booking\\Booking.Application\\Booking.Application.csproj"
             },
-            "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\Services\\Booking\\Booking.Infrastructure\\Booking.Infrastructure.csproj": {
-              "projectPath": "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\Services\\Booking\\Booking.Infrastructure\\Booking.Infrastructure.csproj"
+            "C:\\APPs - DEVOPS\\projeto-reserva\\src\\Services\\Booking\\Booking.Infrastructure\\Booking.Infrastructure.csproj": {
+              "projectPath": "C:\\APPs - DEVOPS\\projeto-reserva\\src\\Services\\Booking\\Booking.Infrastructure\\Booking.Infrastructure.csproj"
             }
           }
         }
