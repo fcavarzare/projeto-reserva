@@ -27,8 +27,8 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       initContainers:
       - name: wait-for-deps
-        image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -w 2 100.100.100.104 1433; do echo waiting for sqlserver; sleep 2; done;']
+        image: python:3.9-slim
+        command: ['sh', '-c', 'until python -c "import socket; s = socket.socket(); s.settimeout(2); s.connect((\"100.100.100.104\", 1433))"; do echo waiting for sqlserver; sleep 2; done;']
         resources:
           limits:
             cpu: "50m"

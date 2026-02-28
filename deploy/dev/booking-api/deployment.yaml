@@ -29,8 +29,8 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       initContainers:
       - name: wait-for-deps
-        image: fcavarzare/projeto-reserva:booking-api-5fa3ef983c0795a0d143005479ecac4bce1f62d7
-        command: ['sh', '-c', 'until nc -z -w 2 100.100.100.104 1433 && nc -z -w 2 rabbitmq-service 5672; do echo waiting for sqlserver and rabbitmq; sleep 2; done;']
+        image: python:3.9-slim
+        command: ['sh', '-c', 'until python -c "import socket; s = socket.socket(); s.settimeout(2); s.connect((\"100.100.100.104\", 1433))"; do echo waiting for sqlserver; sleep 2; done; until python -c "import socket; s = socket.socket(); s.settimeout(2); s.connect((\"rabbitmq-service\", 5672))"; do echo waiting for rabbitmq; sleep 2; done;']
         resources:
           limits:
             cpu: "50m"

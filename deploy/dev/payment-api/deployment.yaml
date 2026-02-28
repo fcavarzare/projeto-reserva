@@ -27,8 +27,8 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       initContainers:
       - name: wait-for-deps
-        image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -w 2 rabbitmq-service 5672; do echo waiting for rabbitmq; sleep 2; done;']
+        image: python:3.9-slim
+        command: ['sh', '-c', 'until python -c "import socket; s = socket.socket(); s.settimeout(2); s.connect((\"rabbitmq-service\", 5672))"; do echo waiting for rabbitmq; sleep 2; done;']
         resources:
           limits:
             cpu: "50m"
