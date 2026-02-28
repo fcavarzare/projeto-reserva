@@ -25,17 +25,6 @@ spec:
                   values:
                   - payment-api
               topologyKey: "kubernetes.io/hostname"
-      initContainers:
-      - name: wait-for-deps
-        image: busybox:latest
-        command: ['sh', '-c', 'until nc -z -w 2 rabbitmq-service 5672; do echo waiting for rabbitmq; sleep 2; done;']
-        resources:
-          limits:
-            cpu: "50m"
-            memory: "64Mi"
-          requests:
-            cpu: "50m"
-            memory: "64Mi"
       containers:
       - name: payment-api
         image: fcavarzare/projeto-reserva:payment-api-latest
@@ -49,6 +38,17 @@ spec:
           limits:
             cpu: "200m"
             memory: "512Mi"
+      initContainers:
+      - name: wait-for-deps
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z -w 2 rabbitmq-service 5672; do echo waiting for rabbitmq; sleep 2; done;']
+        resources:
+          limits:
+            cpu: "50m"
+            memory: "64Mi"
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
 ---
 apiVersion: v1
 kind: Service
