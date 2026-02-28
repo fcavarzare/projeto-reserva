@@ -57,34 +57,33 @@ metadata:
   namespace: dev
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
   - host: projeto-reserva.dev.local
     http:
       paths:
-      - path: /()(.*)
+      - path: /
         pathType: Prefix
         backend:
           service:
             name: web-ui-service
             port:
               number: 80
-      - path: /api/booking(/|$)(.*)
+      - path: /api/reservations
         pathType: Prefix
         backend:
           service:
             name: booking-api-service
             port:
               number: 80
-      - path: /api/identity(/|$)(.*)
+      - path: /api/auth
         pathType: Prefix
         backend:
           service:
             name: identity-api-service
             port:
               number: 80
-      - path: /api/payment(/|$)(.*)
+      - path: /api/payments
         pathType: Prefix
         backend:
           service:
