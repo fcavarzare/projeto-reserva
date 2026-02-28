@@ -43,7 +43,7 @@ spec:
         - containerPort: 8080
         env:
         - name: ConnectionStrings__IdentityDbContext
-          value: "Server=sqlserver-service;Database=IdentityDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
+          value: "Server=10.97.4.12;Database=IdentityDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
         resources:
           limits:
             cpu: "50m"
