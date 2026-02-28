@@ -60,5 +60,20 @@ jobs:
             ${{ env.IMAGE_NAME }}:booking-api-${{ github.sha }}
             ${{ env.IMAGE_NAME }}:booking-api-latest
 
-      - name: Pause Auto Update
-        run: echo "Automatic manifest update is temporarily paused to stabilize cluster"
+      - name: Update Kubernetes manifests
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 1. Update DEV
+          DEV_FILE="deploy/dev/booking-api/deployment.yaml"
+          NEW_IMAGE="${{ env.IMAGE_NAME }}:booking-api-${{ github.sha }}"
+          awk -v new_image="$NEW_IMAGE" 'BEGIN{done=0} {if(!done && $1=="image:"){match($0, /^[[:space:]]*/); indent=substr($0, RSTART, RLENGTH); print indent "image: " new_image; done=1} else print}' "$DEV_FILE" > "$DEV_FILE.tmp" && mv "$DEV_FILE.tmp" "$DEV_FILE"
+          git add "$DEV_FILE"
+          
+          git commit -m "chore: update booking-api image to ${{ github.sha }} [skip ci]" || exit 0
+          
+          for i in {1..5}; do
+            git pull --rebase origin main
+            git push origin HEAD:main && break || sleep 5
+          done
