@@ -28,7 +28,6 @@ public class CreateReservationCommandHandler : IRequestHandler<CreateReservation
 
     public async Task<Guid> Handle(CreateReservationCommand request, CancellationToken cancellationToken)
     {
-        // 1. Lock Distribuído (Redis)
         string lockKey = $"lock:seat:{request.SeatId}";
         string lockValue = Guid.NewGuid().ToString();
         
@@ -40,18 +39,15 @@ public class CreateReservationCommandHandler : IRequestHandler<CreateReservation
             var seat = await _seatRepository.GetByIdAsync(request.SeatId);
             if (seat == null || seat.IsReserved) throw new Exception("Assento indisponivel.");
 
-            // 2. Passo Inicial: Criar Reserva como PENDENTE
             seat.Reserve();
-            var reservation = new Reservation(request.SeatId, request.UserId, TimeSpan.FromMinutes(10));
+            var reservation = new Reservation(request.SeatId, request.UserId, request.Price, request.TicketType, TimeSpan.FromMinutes(10));
             
             await _seatRepository.UpdateAsync(seat);
             await _reservationRepository.AddAsync(reservation);
 
-            // 3. MENSAGERIA: Publicar o evento de reserva criada
-            // O Booking não espera o pagamento aqui, ele apenas avisa que a reserva aconteceu!
             await _publishEndpoint.Publish<ReservationCreatedEvent>(new {
                 ReservationId = reservation.Id,
-                Amount = 150.00m,
+                Amount = request.Price,
                 UserId = request.UserId
             });
 

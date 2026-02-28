@@ -21,6 +21,8 @@ public class BookingDbContext : DbContext
         modelBuilder.Entity<Show>().HasKey(x => x.Id);
         modelBuilder.Entity<Seat>().HasKey(x => x.Id);
         modelBuilder.Entity<Reservation>().HasKey(x => x.Id);
+        modelBuilder.Entity<Reservation>().Property(x => x.Price).HasColumnType("decimal(18,2)");
+        modelBuilder.Entity<Reservation>().Property(x => x.TicketType).HasMaxLength(20);
 
         modelBuilder.Entity<Seat>().Property(x => x.Row).IsRequired().HasMaxLength(5);
         modelBuilder.Entity<Seat>().Property<byte[]>("RowVersion").IsRowVersion();

@@ -8,16 +8,20 @@ public class Reservation
     public Guid SeatId { get; private set; }
     public string UserId { get; private set; }
     public ReservationStatus Status { get; private set; }
+    public decimal Price { get; private set; }
+    public string TicketType { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? ExpiresAt { get; private set; }
 
     private Reservation() { }
 
-    public Reservation(Guid seatId, string userId, TimeSpan ttl)
+    public Reservation(Guid seatId, string userId, decimal price, string ticketType, TimeSpan ttl)
     {
         Id = Guid.NewGuid();
         SeatId = seatId;
         UserId = userId;
+        Price = price;
+        TicketType = ticketType;
         Status = ReservationStatus.Pending;
         CreatedAt = DateTime.UtcNow;
         ExpiresAt = CreatedAt.Add(ttl);
