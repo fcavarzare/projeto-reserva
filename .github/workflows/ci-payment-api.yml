@@ -56,4 +56,4 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add deploy/dev/payment-api/deployment.yaml
           git commit -m "chore(dev): update payment-api image ${GITHUB_SHA} [skip ci]"
-          git push origin HEAD:main
+          git pull --rebase origin main`ngit push origin HEAD:main

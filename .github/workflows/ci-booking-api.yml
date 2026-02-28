@@ -97,4 +97,4 @@ jobs:
 
           git commit -m "chore(dev): update booking-api image ${GITHUB_SHA} [skip ci]"
           git pull --rebase origin main
-          git push origin HEAD:main
+          git pull --rebase origin main`ngit push origin HEAD:main
