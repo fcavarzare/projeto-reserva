@@ -1,5 +1,5 @@
 # Configurações
-$baseUrl = "http://localhost:5000/api/reservations"
+$baseUrl = "http://100.100.100.104:5000/api/reservations"
 
 Write-Host "`n--- DIAGNOSTICO DE CONEXAO ---" -ForegroundColor Cyan
 try {
