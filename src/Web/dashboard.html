@@ -214,9 +214,23 @@
                     try {
                         const res = await fetch(this.urls.booking, {
                             method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
-                            body: JSON.stringify({ seatId: this.selectedSeat.id, userId: this.userName })
+                            body: JSON.stringify({ 
+                                seatId: this.selectedSeat.id, 
+                                userId: this.userName,
+                                price: this.finalPrice,
+                                ticketType: this.ticketType
+                            })
                         });
-                        if (res.ok) { this.showToast('Reserva confirmada!', true); this.selectedSeat = null; await this.fetchSeats(); }
+                        if (res.ok) {
+                            this.showToast('Reserva confirmada com sucesso!', true);
+                            this.selectedSeat = null;
+                            await this.fetchSeats();
+                        } else {
+                            const errorData = await res.json();
+                            this.showToast(errorData.message || 'Falha ao realizar reserva.', false);
+                        }
+                    } catch (e) {
+                        this.showToast('Erro de conexão com o servidor.', false);
                     } finally { this.processing = false; }
                 },
                 async initSeed() {
