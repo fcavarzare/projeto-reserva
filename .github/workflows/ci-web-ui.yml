@@ -32,6 +32,25 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Build image locally
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/Web/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:temp-scan
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:temp-scan
+          format: 'table'
+          exit-code: 1
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL'
+
       - name: Build & Push final image
         uses: docker/build-push-action@v6
         with:
@@ -94,3 +113,4 @@ jobs:
             git pull --rebase origin main
             git push origin HEAD:main && break || sleep 5
           done
+
