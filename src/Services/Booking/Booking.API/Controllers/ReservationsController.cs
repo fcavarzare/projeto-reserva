@@ -30,8 +30,6 @@ public class ReservationsController : ControllerBase
     public async Task<IActionResult> GetShows()
     {
         var shows = await _context.Shows
-            .Include(s => s.Movie)
-            .Include(s => s.Theater)
             .ToListAsync();
         return Ok(shows);
     }
