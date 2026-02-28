@@ -49,11 +49,15 @@ jobs:
           NEW_IMAGE="${IMAGE_NAME}:payment-api-${GITHUB_SHA}"
           awk -v new_image="$NEW_IMAGE" 'BEGIN{done=0} {if(!done && $1=="image:"){match($0, /^[[:space:]]*/); indent=substr($0, RSTART, RLENGTH); print indent "image: " new_image; done=1} else print}' "$DEV_FILE" > "$DEV_FILE.tmp" && mv "$DEV_FILE.tmp" "$DEV_FILE"
 
-      - name: Commit & push DEV update
+      - name: Commit & push
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add deploy/dev/payment-api/deployment.yaml
-          git commit -m "chore(dev): update payment-api image ${GITHUB_SHA} [skip ci]"
-          git pull --rebase origin main`ngit push origin HEAD:main
+          git commit -m "chore(dev): update payment-api image ${GITHUB_SHA} [skip ci]" || exit 0
+          
+          for i in {1..5}; do
+            git pull --rebase origin main
+            git push origin HEAD:main && break || sleep 5
+          done

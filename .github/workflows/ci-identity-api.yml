@@ -45,5 +45,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add deploy/dev/identity-api/deployment.yaml
-          git commit -m "chore(dev): update identity-api image ${GITHUB_SHA} [skip ci]"
-          git pull --rebase origin main`ngit push origin HEAD:main
+          git commit -m "chore(dev): update identity-api image ${GITHUB_SHA} [skip ci]" || exit 0
+          
+          for i in {1..5}; do
+            git pull --rebase origin main
+            git push origin HEAD:main && break || sleep 5
+          done
