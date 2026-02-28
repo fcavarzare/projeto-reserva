@@ -6,7 +6,6 @@ on:
     paths:
       - "src/Services/Identity/**"
   workflow_dispatch: {}
-      - "src/Services/Identity/**"
 
 permissions:
   contents: write
@@ -21,11 +20,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build & Push final image
         uses: docker/build-push-action@v6
         with:
@@ -35,12 +41,15 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:identity-api-${{ github.sha }}
             ${{ env.IMAGE_NAME }}:identity-api-latest
-      - name: Update DEV manifest
+
+      - name: Update DEV manifest to SHA
         shell: bash
         run: |
+          set -euo pipefail
           DEV_FILE="deploy/dev/identity-api/deployment.yaml"
           NEW_IMAGE="${IMAGE_NAME}:identity-api-${GITHUB_SHA}"
           awk -v new_image="$NEW_IMAGE" 'BEGIN{done=0} {if(!done && $1=="image:"){match($0, /^[[:space:]]*/); indent=substr($0, RSTART, RLENGTH); print indent "image: " new_image; done=1} else print}' "$DEV_FILE" > "$DEV_FILE.tmp" && mv "$DEV_FILE.tmp" "$DEV_FILE"
+
       - name: Commit & push
         shell: bash
         run: |
@@ -48,9 +57,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add deploy/dev/identity-api/deployment.yaml
           git commit -m "chore(dev): update identity-api image ${GITHUB_SHA} [skip ci]" || exit 0
-          
           for i in {1..5}; do
             git pull --rebase origin main
             git push origin HEAD:main && break || sleep 5
           done
-

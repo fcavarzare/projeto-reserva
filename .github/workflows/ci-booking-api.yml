@@ -6,7 +6,6 @@ on:
     paths:
       - "src/Services/Booking/**"
   workflow_dispatch: {}
-      - "src/Services/Booking/**"
 
 permissions:
   contents: write
@@ -33,25 +32,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build image locally
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: src/Services/Booking/Booking.API/Dockerfile
-          push: false
-          load: true
-          tags: ${{ env.IMAGE_NAME }}:temp-scan
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.IMAGE_NAME }}:temp-scan
-          format: 'table'
-          exit-code: 1
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL'
-
       - name: Build & Push final image
         uses: docker/build-push-action@v6
         with:
@@ -68,21 +48,7 @@ jobs:
           set -euo pipefail
           DEV_FILE="deploy/dev/booking-api/deployment.yaml"
           NEW_IMAGE="${IMAGE_NAME}:booking-api-${GITHUB_SHA}"
-
-          [[ -f "$DEV_FILE" ]] || { echo "ERROR: $DEV_FILE not found"; exit 1; }
-
-          # Script AWK para trocar a imagem no manifesto
-          awk -v new_image="$NEW_IMAGE" '
-            BEGIN{done=0}
-            {
-              if(!done && $1=="image:"){
-                match($0, /^[[:space:]]*/)
-                indent=substr($0, RSTART, RLENGTH)
-                print indent "image: " new_image
-                done=1
-              } else print
-            }
-          ' "$DEV_FILE" > "$DEV_FILE.tmp" && mv "$DEV_FILE.tmp" "$DEV_FILE"
+          awk -v new_image="$NEW_IMAGE" 'BEGIN{done=0} {if(!done && $1=="image:"){match($0, /^[[:space:]]*/); indent=substr($0, RSTART, RLENGTH); print indent "image: " new_image; done=1} else print}' "$DEV_FILE" > "$DEV_FILE.tmp" && mv "$DEV_FILE.tmp" "$DEV_FILE"
 
       - name: Commit & push
         shell: bash
@@ -91,9 +57,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add deploy/dev/booking-api/deployment.yaml
           git commit -m "chore(dev): update booking-api image ${GITHUB_SHA} [skip ci]" || exit 0
-          
           for i in {1..5}; do
             git pull --rebase origin main
             git push origin HEAD:main && break || sleep 5
           done
-

@@ -6,7 +6,6 @@ on:
     paths:
       - "src/Services/Payment/**"
   workflow_dispatch: {}
-      - "src/Services/Payment/**"
 
 permissions:
   contents: write
@@ -58,9 +57,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add deploy/dev/payment-api/deployment.yaml
           git commit -m "chore(dev): update payment-api image ${GITHUB_SHA} [skip ci]" || exit 0
-          
           for i in {1..5}; do
             git pull --rebase origin main
             git push origin HEAD:main && break || sleep 5
           done
-
