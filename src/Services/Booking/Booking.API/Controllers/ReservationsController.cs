@@ -117,7 +117,14 @@ public class ReservationsController : ControllerBase
         await CreateSeats(s3, t2);
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "O catálogo de cinema foi atualizado com sucesso!" });
+        return Ok(new { 
+            message = "O catálogo de cinema foi atualizado com sucesso!",
+            shows = new[] { 
+                new { id = s1.Id, movieTitle = m1.Title },
+                new { id = s2.Id, movieTitle = m2.Title },
+                new { id = s3.Id, movieTitle = m3.Title }
+            }
+        });
     }
 
     [HttpPost]
