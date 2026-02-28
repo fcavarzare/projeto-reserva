@@ -31,7 +31,8 @@ public class MoviesController : ControllerBase
             .Select(s => new {
                 s.Id,
                 s.Date,
-                TheaterName = _context.Theaters.Where(t => t.Id == s.TheaterId).Select(t => t.Name).FirstOrDefault()
+                TheaterName = _context.Theaters.Where(t => t.Id == s.TheaterId).Select(t => t.Name).FirstOrDefault(),
+                Location = _context.Theaters.Where(t => t.Id == s.TheaterId).Select(t => t.Location).FirstOrDefault()
             })
             .ToListAsync();
         return Ok(sessions);

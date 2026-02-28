@@ -88,23 +88,42 @@ public class ReservationsController : ControllerBase
         
         await _context.Movies.AddRangeAsync(m1, m2, m3);
 
-        // 2. Criar Salas
-        var t1 = new Booking.Domain.Entities.Theater("Sala IMAX 01", 5, 10);
-        var t2 = new Booking.Domain.Entities.Theater("Sala VIP Premium", 3, 6);
-        await _context.Theaters.AddRangeAsync(t1, t2);
+        // 2. Criar Salas em 3 Estados
+        var theaters = new System.Collections.Generic.List<Booking.Domain.Entities.Theater>
+        {
+            new Booking.Domain.Entities.Theater("CineMark SP - Paulista", 8, 12, "SP"),
+            new Booking.Domain.Entities.Theater("CineMark SP - Eldorado", 6, 10, "SP"),
+            new Booking.Domain.Entities.Theater("UCI RJ - New York City Center", 10, 15, "RJ"),
+            new Booking.Domain.Entities.Theater("Cinepolis RJ - Lagoon", 5, 8, "RJ"),
+            new Booking.Domain.Entities.Theater("Cineart MG - Diamond Mall", 7, 12, "MG"),
+            new Booking.Domain.Entities.Theater("Net Cine MG - Estação", 4, 10, "MG")
+        };
+        await _context.Theaters.AddRangeAsync(theaters);
         await _context.SaveChangesAsync();
 
-        // 3. Criar Sessões
-        var s1 = new Booking.Domain.Entities.Show(m1.Id, t1.Id, DateTime.UtcNow.AddHours(2));
-        var s2 = new Booking.Domain.Entities.Show(m2.Id, t1.Id, DateTime.UtcNow.AddHours(5));
-        var s3 = new Booking.Domain.Entities.Show(m3.Id, t2.Id, DateTime.UtcNow.AddHours(3));
-        await _context.Shows.AddRangeAsync(s1, s2, s3);
+        // 3. Criar Sessões (Múltiplos horários)
+        var shows = new System.Collections.Generic.List<Booking.Domain.Entities.Show>();
+        var movies = new[] { m1, m2, m3 };
+        var hours = new[] { 14, 17, 20, 22 };
+
+        foreach (var theater in theaters)
+        {
+            foreach (var movie in movies)
+            {
+                foreach (var hour in hours)
+                {
+                    // Cada cinema tem sessões dos 3 filmes em 4 horários diferentes
+                    shows.Add(new Booking.Domain.Entities.Show(movie.Id, theater.Id, DateTime.Today.AddHours(hour)));
+                }
+            }
+        }
+        await _context.Shows.AddRangeAsync(shows);
         await _context.SaveChangesAsync();
 
-        // 4. Criar Assentos
+        // 4. Criar Assentos (Massivamente)
         async Task CreateSeats(Booking.Domain.Entities.Show session, Booking.Domain.Entities.Theater theater)
         {
-            var rows = new[] { "A", "B", "C", "D", "E", "F" };
+            var rows = new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" };
             var sessionSeats = new System.Collections.Generic.List<Booking.Domain.Entities.Seat>();
             for (int r = 0; r < theater.Rows; r++)
             {
@@ -116,25 +135,23 @@ public class ReservationsController : ControllerBase
             await _context.Seats.AddRangeAsync(sessionSeats);
         }
 
-        await CreateSeats(s1, t1);
-        await CreateSeats(s2, t1);
-        await CreateSeats(s3, t2);
+        foreach (var show in shows)
+        {
+            var theater = theaters.First(t => t.Id == show.TheaterId);
+            await CreateSeats(show, theater);
+        }
         
         try {
             await _context.SaveChangesAsync();
         } catch (Exception ex) {
-            // Se falhar o bulk, tentamos limpar e salvar um por um como fallback
             _context.ChangeTracker.Clear();
-            return BadRequest(new { message = "Erro ao persistir assentos no banco.", detail = ex.Message });
+            return BadRequest(new { message = "Erro ao persistir catálogo expandido.", detail = ex.Message });
         }
 
         return Ok(new { 
-            message = "O catálogo de cinema foi atualizado com sucesso!",
-            shows = new[] { 
-                new { id = s1.Id, movieTitle = m1.Title },
-                new { id = s2.Id, movieTitle = m2.Title },
-                new { id = s3.Id, movieTitle = m3.Title }
-            }
+            message = "Catálogo Nacional (SP, RJ, MG) atualizado com sucesso!",
+            totalTheaters = theaters.Count,
+            totalShows = shows.Count
         });
     }
 

@@ -17,6 +17,7 @@ public class BookingDbContext : DbContext
     {
         modelBuilder.Entity<Movie>().HasKey(x => x.Id);
         modelBuilder.Entity<Theater>().HasKey(x => x.Id);
+        modelBuilder.Entity<Theater>().Property(x => x.Location).IsRequired().HasMaxLength(10).HasDefaultValue("SP");
         modelBuilder.Entity<Show>().HasKey(x => x.Id);
         modelBuilder.Entity<Seat>().HasKey(x => x.Id);
         modelBuilder.Entity<Reservation>().HasKey(x => x.Id);

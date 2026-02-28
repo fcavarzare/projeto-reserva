@@ -77,25 +77,37 @@
             </div>
 
             <!-- Vista: Sessões -->
-            <div x-show="view === 'sessions'" class="max-w-3xl mx-auto">
+            <div x-show="view === 'sessions'" class="max-w-4xl mx-auto">
                 <button @click="view = 'catalog'" class="mb-8 text-blue-400 text-sm font-bold flex items-center gap-2 hover:text-blue-300">← Voltar ao Catálogo</button>
-                <div class="flex gap-10 items-start">
-                    <div class="flex-grow">
-                        <h2 class="text-4xl font-black mb-2" x-text="selectedMovie?.title"></h2>
-                        <p class="text-slate-500 mb-12 italic">Selecione o horário e a sala da sua preferência:</p>
-                        
-                        <div class="grid gap-4">
-                            <template x-for="session in sessions" :key="session.id">
-                                <div @click="selectSession(session)" class="bg-slate-800 p-8 rounded-3xl border border-slate-700 flex justify-between items-center hover:bg-slate-700/50 hover:border-emerald-500/30 cursor-pointer transition-all group">
-                                    <div>
-                                        <p class="text-xs text-slate-500 font-bold uppercase mb-2 tracking-widest" x-text="session.theaterName"></p>
-                                        <p class="text-3xl font-black text-emerald-400 group-hover:scale-105 transition-transform origin-left" x-text="formatDate(session.date)"></p>
-                                    </div>
-                                    <div class="text-right">
-                                        <span class="bg-emerald-500/10 text-emerald-400 px-5 py-2 rounded-xl text-xs font-black border border-emerald-500/20 uppercase tracking-tighter">Escolher Assento</span>
-                                    </div>
+                
+                <div class="mb-12">
+                    <h2 class="text-4xl font-black mb-6" x-text="selectedMovie?.title"></h2>
+                    
+                    <div class="flex gap-4 mb-8 p-1 bg-slate-800 rounded-2xl w-fit border border-slate-700">
+                        <template x-for="state in ['SP', 'RJ', 'MG']">
+                            <button @click="selectedState = state" 
+                                :class="selectedState === state ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'"
+                                class="px-8 py-3 rounded-xl text-xs font-black transition-all uppercase tracking-widest"
+                                x-text="state"></button>
+                        </template>
+                    </div>
+
+                    <p class="text-slate-500 mb-8 italic">Sessões disponíveis em <span class="text-blue-400 font-bold" x-text="selectedState"></span>:</p>
+                    
+                    <div class="grid gap-4">
+                        <template x-for="session in filteredSessions" :key="session.id">
+                            <div @click="selectSession(session)" class="bg-slate-800 p-8 rounded-3xl border border-slate-700 flex justify-between items-center hover:bg-slate-700/50 hover:border-emerald-500/30 cursor-pointer transition-all group">
+                                <div>
+                                    <p class="text-xs text-slate-500 font-bold uppercase mb-2 tracking-widest" x-text="session.theaterName"></p>
+                                    <p class="text-3xl font-black text-emerald-400 group-hover:scale-105 transition-transform origin-left" x-text="formatDate(session.date)"></p>
                                 </div>
-                            </template>
+                                <div class="text-right">
+                                    <span class="bg-emerald-500/10 text-emerald-400 px-5 py-2 rounded-xl text-xs font-black border border-emerald-500/20 uppercase tracking-tighter">Escolher Assento</span>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="filteredSessions.length === 0" class="text-center py-12 bg-slate-800/50 rounded-3xl border border-dashed border-slate-700">
+                            <p class="text-slate-500 font-bold italic">Nenhuma sessão encontrada para este estado.</p>
                         </div>
                     </div>
                 </div>
@@ -164,6 +176,7 @@
                 userName: localStorage.getItem('user'),
                 authMode: 'login',
                 view: 'catalog',
+                selectedState: 'SP',
                 movies: [],
                 sessions: [],
                 seats: [],
@@ -178,6 +191,10 @@
                     booking: '/api/reservations',
                     movies: '/api/movies',
                     identity: '/api/auth'
+                },
+
+                get filteredSessions() {
+                    return this.sessions.filter(s => s.location === this.selectedState);
                 },
 
                 init() {
