@@ -31,10 +31,10 @@ spec:
         command: ['sh', '-c', 'until nc -z sqlserver-service 1433 && nc -z rabbitmq-service 5672; do echo waiting for sqlserver and rabbitmq; sleep 2; done;']
         resources:
           limits:
-            cpu: "50m"
+            cpu: "200m"
             memory: "64Mi"
           requests:
-            cpu: "50m"
+            cpu: "200m"
             memory: "64Mi"
       containers:
       - name: payment-api
@@ -46,8 +46,8 @@ spec:
           value: "rabbitmq-service"
         resources:
           limits:
-            cpu: "50m"
-            memory: "256Mi"
+            cpu: "200m"
+            memory: "512Mi"
 ---
 apiVersion: v1
 kind: Service
