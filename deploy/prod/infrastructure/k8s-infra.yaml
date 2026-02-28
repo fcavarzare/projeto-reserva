@@ -24,6 +24,10 @@ spec:
       labels:
         app: sqlserver
     spec:
+      volumes:
+      - name: mssql-storage
+        persistentVolumeClaim:
+          claimName: mssql-data-pvc
       containers:
       - name: mssql
         image: mcr.microsoft.com/mssql/server:2022-latest
@@ -36,6 +40,9 @@ spec:
           requests:
             cpu: "500m"
             memory: "3Gi"
+        volumeMounts:
+        - name: mssql-storage
+          mountPath: /var/opt/mssql
         env:
         - name: ACCEPT_EULA
           value: "Y"
@@ -71,6 +78,10 @@ spec:
       labels:
         app: redis
     spec:
+      volumes:
+      - name: mssql-storage
+        persistentVolumeClaim:
+          claimName: mssql-data-pvc
       containers:
       - name: redis
         image: redis:latest
@@ -103,6 +114,10 @@ spec:
       labels:
         app: rabbitmq
     spec:
+      volumes:
+      - name: mssql-storage
+        persistentVolumeClaim:
+          claimName: mssql-data-pvc
       containers:
       - name: rabbitmq
         image: rabbitmq:3-management
@@ -125,3 +140,16 @@ spec:
   - name: management
     port: 15672
     targetPort: 15672
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mssql-data-pvc
+  namespace: prod
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

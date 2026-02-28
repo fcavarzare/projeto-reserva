@@ -38,6 +38,8 @@ spec:
           value: "Server=sqlserver-service;Database=BookingDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
         - name: ConnectionStrings__Redis
           value: "redis-service:6379"
+        - name: ExternalServices__PaymentApi
+          value: "http://payment-api-service:80"
         - name: ConnectionStrings__RabbitMQ
           value: "rabbitmq-service"
         resources:
