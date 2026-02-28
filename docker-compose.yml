@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: booking-sqlserver
+    ports:
+      - "1443:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Your_password123
+      - MSSQL_PID=Developer
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - booking-network
+
+  redis:
+    image: redis:latest
+    container_name: booking-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - booking-network
+
+networks:
+  booking-network:
+    driver: bridge
+
+volumes:
+  mssql_data:
+  redis_data:

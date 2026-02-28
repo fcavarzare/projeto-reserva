@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{C292611E-5B66-40D2-88E3-913628BAF3A7}|src\\Services\\Booking\\Booking.Domain\\Booking.Domain.csproj|c:\\users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\services\\booking\\booking.domain\\booking.domain.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{C292611E-5B66-40D2-88E3-913628BAF3A7}|src\\Services\\Booking\\Booking.Domain\\Booking.Domain.csproj|solutionrelative:src\\services\\booking\\booking.domain\\booking.domain.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Booking.Domain",
+              "DocumentMoniker": "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\Services\\Booking\\Booking.Domain\\Booking.Domain.csproj",
+              "RelativeDocumentMoniker": "src\\Services\\Booking\\Booking.Domain\\Booking.Domain.csproj",
+              "ToolTip": "C:\\Users\\fernandocavarzare\\source\\repos\\projeto-reserva\\src\\Services\\Booking\\Booking.Domain\\Booking.Domain.csproj",
+              "RelativeToolTip": "src\\Services\\Booking\\Booking.Domain\\Booking.Domain.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-02-28T00:24:27.07Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

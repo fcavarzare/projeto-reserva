@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Cinema - Dashboard Profissional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <style> 
+        [x-cloak] { display: none !important; } 
+        .seat { transition: all 0.2s; }
+        .seat:hover:not(:disabled) { transform: scale(1.1); z-index: 10; }
+        .movie-card:hover img { transform: scale(1.05); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans" x-data="cinemaApp()" x-init="init()">
+    
+    <!-- Tela de Autenticação -->
+    <div x-show="!isLoggedIn" class="min-h-screen flex items-center justify-center p-6 bg-slate-900">
+        <div class="relative bg-slate-800 p-10 rounded-[2.5rem] border border-slate-700 shadow-2xl w-full max-w-md text-center">
+            <h2 class="text-4xl font-black mb-8 text-blue-400 italic tracking-tighter uppercase">Cinema System</h2>
+            <p class="text-slate-500 text-xs font-bold uppercase mb-8" x-text="authMode === 'login' ? 'Entre na sua conta para continuar' : 'Crie seu cadastro gratuito'"></p>
+            
+            <form @submit.prevent="authMode === 'login' ? login() : register()" class="space-y-6">
+                <input type="text" x-model="loginForm.username" class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 text-sm" placeholder="Nome de usuário">
+                <input type="password" x-model="loginForm.password" class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 text-sm" placeholder="Sua senha secreta">
+                
+                <button type="submit" :disabled="loading" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl shadow-xl transition-all uppercase tracking-widest text-sm">
+                    <span x-show="!loading" x-text="authMode === 'login' ? 'Acessar o Sistema' : 'Finalizar Cadastro'"></span>
+                    <span x-show="loading">Processando...</span>
+                </button>
+                
+                <button type="button" @click="authMode = (authMode === 'login' ? 'register' : 'login')" class="text-xs text-slate-400 hover:text-blue-400 underline decoration-blue-500/30">
+                    <span x-text="authMode === 'login' ? 'Ainda não tem uma conta? Cadastre-se' : 'Já possui conta? Voltar para o login'"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Aplicação Principal -->
+    <div x-show="isLoggedIn" x-cloak class="flex flex-col min-h-screen">
+        <header class="bg-slate-800 border-b border-slate-700 p-6 shadow-xl sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-8">
+                    <h1 @click="view = 'catalog'" class="text-2xl font-black bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent italic cursor-pointer">CINEMA SYSTEM</h1>
+                    <div class="text-xs text-slate-400">Olá, <span class="text-blue-400 font-bold" x-text="userName"></span></div>
+                </div>
+                <div class="flex items-center gap-6">
+                    <button @click="initSeed()" class="text-[10px] text-slate-500 uppercase border border-slate-700 px-3 py-1.5 rounded-lg hover:text-white transition-colors font-bold">Atualizar Catálogo</button>
+                    <button @click="logout()" class="text-rose-500 text-xs font-bold underline">Sair do Sistema</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow max-w-7xl mx-auto p-8 w-full">
+            
+            <!-- Vista: Catálogo de Filmes -->
+            <div x-show="view === 'catalog'" class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <template x-for="movie in movies" :key="movie.id">
+                    <div class="movie-card bg-slate-800 rounded-[2.5rem] overflow-hidden border border-slate-700 shadow-2xl hover:border-blue-500/50 transition-all group cursor-pointer flex flex-col h-full" @click="selectMovie(movie)">
+                        <!-- Fallback visual para imagens quebradas -->
+                        <div class="relative h-[450px] overflow-hidden bg-slate-900">
+                            <img :src="movie.posterUrl" 
+                                 class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-500"
+                                 @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'">
+                            <div class="hidden absolute inset-0 flex flex-col items-center justify-center p-10 bg-gradient-to-br from-slate-800 to-slate-900 text-center">
+                                <span class="text-6xl mb-4">🎬</span>
+                                <h3 class="text-2xl font-black text-slate-500 uppercase italic" x-text="movie.title"></h3>
+                            </div>
+                        </div>
+                        <div class="p-8 flex-grow">
+                            <h3 class="text-xl font-black mb-3 group-hover:text-blue-400 transition-colors" x-text="movie.title"></h3>
+                            <p class="text-slate-400 text-xs leading-relaxed line-clamp-3" x-text="movie.description"></p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Vista: Sessões -->
+            <div x-show="view === 'sessions'" class="max-w-3xl mx-auto">
+                <button @click="view = 'catalog'" class="mb-8 text-blue-400 text-sm font-bold flex items-center gap-2 hover:text-blue-300">← Voltar ao Catálogo</button>
+                <div class="flex gap-10 items-start">
+                    <div class="flex-grow">
+                        <h2 class="text-4xl font-black mb-2" x-text="selectedMovie?.title"></h2>
+                        <p class="text-slate-500 mb-12 italic">Selecione o horário e a sala da sua preferência:</p>
+                        
+                        <div class="grid gap-4">
+                            <template x-for="session in sessions" :key="session.id">
+                                <div @click="selectSession(session)" class="bg-slate-800 p-8 rounded-3xl border border-slate-700 flex justify-between items-center hover:bg-slate-700/50 hover:border-emerald-500/30 cursor-pointer transition-all group">
+                                    <div>
+                                        <p class="text-xs text-slate-500 font-bold uppercase mb-2 tracking-widest" x-text="session.theaterName"></p>
+                                        <p class="text-3xl font-black text-emerald-400 group-hover:scale-105 transition-transform origin-left" x-text="formatDate(session.date)"></p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="bg-emerald-500/10 text-emerald-400 px-5 py-2 rounded-xl text-xs font-black border border-emerald-500/20 uppercase tracking-tighter">Escolher Assento</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista: Mapa de Assentos -->
+            <div x-show="view === 'seats'" class="max-w-5xl mx-auto">
+                <button @click="view = 'sessions'" class="mb-8 text-blue-400 text-sm font-bold flex items-center gap-2 hover:text-blue-300">← Voltar para Horários</button>
+                
+                <div class="bg-slate-800 p-12 rounded-[3.5rem] border border-slate-700 shadow-2xl relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-emerald-500"></div>
+                    
+                    <!-- Painel de Confirmação -->
+                    <div x-show="selectedSeat" class="absolute inset-0 bg-slate-900/95 z-50 rounded-[3.5rem] flex flex-col items-center justify-center p-10 text-center" x-transition>
+                        <div class="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center text-4xl mb-6 shadow-lg">🎟️</div>
+                        <h3 class="text-3xl font-black mb-2 uppercase">Confirmar Reserva</h3>
+                        <p class="text-slate-400 mb-10 text-lg">Você selecionou a poltrona <span class="text-blue-400 font-black" x-text="selectedSeat?.row + selectedSeat?.number"></span></p>
+                        <div class="flex gap-6 w-full max-w-md">
+                            <button @click="confirmBooking()" :disabled="processing" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-2xl shadow-xl transition-all uppercase text-sm tracking-widest border-b-4 border-emerald-800">
+                                <span x-show="!processing">Pagar Agora</span>
+                                <span x-show="processing" class="animate-pulse italic">Processando...</span>
+                            </button>
+                            <button @click="selectedSeat = null" :disabled="processing" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-black py-5 rounded-2xl text-sm uppercase tracking-widest transition-all">Desistir</button>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-16">
+                        <div class="inline-block px-24 py-3 bg-slate-900 text-slate-600 rounded-b-[2rem] border-x border-b border-slate-700 text-[10px] font-black tracking-[1em] uppercase">TELA DO CINEMA</div>
+                    </div>
+
+                    <div class="grid grid-cols-10 gap-4 justify-items-center mb-16">
+                        <template x-for="seat in seats" :key="seat.id">
+                            <button @click="selectedSeat = seat" :disabled="seat.isReserved"
+                                :class="seat.isReserved ? 'bg-slate-700 text-slate-500 border-transparent opacity-50' : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400 shadow-lg shadow-emerald-900/20'"
+                                class="w-11 h-11 rounded-xl flex items-center justify-center text-[10px] font-black transition-all border-b-4 active:scale-90">
+                                <span x-text="seat.row + seat.number"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <!-- Legendas Restauradas -->
+                    <div class="flex justify-center gap-12 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-t border-slate-700/50 pt-10">
+                        <div class="flex items-center gap-3"><div class="w-4 h-4 bg-emerald-600 rounded-lg"></div> Poltrona Livre</div>
+                        <div class="flex items-center gap-3"><div class="w-4 h-4 bg-slate-700 rounded-lg"></div> Já Reservada</div>
+                        <div class="flex items-center gap-3"><div class="w-4 h-4 bg-blue-500 animate-pulse rounded-lg"></div> Seu Pedido</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Feedback Toasts -->
+    <div x-show="toast.show" x-transition class="fixed bottom-10 left-1/2 -translate-x-1/2 p-5 rounded-2xl shadow-2xl border bg-slate-800 flex items-center gap-4 min-w-[350px] z-[100]" :class="toast.success ? 'border-emerald-500/50 text-emerald-400' : 'border-rose-500/50 text-rose-400'">
+        <div class="text-2xl" x-text="toast.success ? '✅' : '❌'"></div>
+        <div>
+            <p class="text-xs font-black uppercase tracking-widest mb-0.5" x-text="toast.success ? 'Sucesso!' : 'Falha no Sistema'"></p>
+            <p class="text-sm font-medium text-slate-300" x-text="toast.message"></p>
+        </div>
+    </div>
+
+    <script>
+        function cinemaApp() {
+            return {
+                isLoggedIn: !!localStorage.getItem('token'),
+                token: localStorage.getItem('token'),
+                userName: localStorage.getItem('user'),
+                authMode: 'login',
+                view: 'catalog',
+                movies: [],
+                sessions: [],
+                seats: [],
+                selectedMovie: null,
+                selectedSession: null,
+                selectedSeat: null,
+                loading: false,
+                processing: false,
+                toast: { show: false, message: '', success: true },
+                loginForm: { username: '', password: '' },
+                urls: {
+                    booking: 'http://localhost:5000/api/reservations',
+                    movies: 'http://localhost:5000/api/movies',
+                    identity: 'http://localhost:5002/api/auth'
+                },
+
+                init() {
+                    if (this.isLoggedIn) this.fetchMovies();
+                },
+
+                async login() {
+                    this.loading = true;
+                    try {
+                        const res = await fetch(`${this.urls.identity}/login`, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.loginForm)
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            localStorage.setItem('token', data.token);
+                            localStorage.setItem('user', data.user);
+                            location.reload();
+                        } else { this.showToast('Usuário ou senha incorretos.', false); }
+                    } finally { this.loading = false; }
+                },
+
+                async register() {
+                    this.loading = true;
+                    try {
+                        const res = await fetch(`${this.urls.identity}/register`, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.loginForm)
+                        });
+                        if (res.ok) { this.showToast('Conta criada com sucesso! Faça login.', true); this.authMode = 'login'; }
+                        else { this.showToast('Este nome de usuário já existe.', false); }
+                    } finally { this.loading = false; }
+                },
+
+                logout() { localStorage.clear(); location.reload(); },
+
+                async fetchMovies() {
+                    try {
+                        const res = await fetch(this.urls.movies, { headers: { 'Authorization': `Bearer ${this.token}` } });
+                        if (res.ok) this.movies = await res.json();
+                    } catch (e) { console.error('Erro ao buscar catálogo.'); }
+                },
+
+                async selectMovie(movie) {
+                    this.selectedMovie = movie;
+                    try {
+                        const res = await fetch(`${this.urls.movies}/${movie.id}/sessions`, { headers: { 'Authorization': `Bearer ${this.token}` } });
+                        if (res.ok) { this.sessions = await res.json(); this.view = 'sessions'; }
+                    } catch (e) { this.showToast('Erro ao buscar sessões.', false); }
+                },
+
+                async selectSession(session) {
+                    this.selectedSession = session;
+                    await this.fetchSeats();
+                    this.view = 'seats';
+                },
+
+                async fetchSeats() {
+                    try {
+                        const res = await fetch(`${this.urls.booking}/seats/${this.selectedSession.id}`, { headers: { 'Authorization': `Bearer ${this.token}` } });
+                        if (res.ok) this.seats = await res.json();
+                    } catch (e) { console.error('Erro ao buscar assentos.'); }
+                },
+
+                async confirmBooking() {
+                    this.processing = true;
+                    try {
+                        const res = await fetch(this.urls.booking, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
+                            body: JSON.stringify({ seatId: this.selectedSeat.id, userId: this.userName })
+                        });
+                        if (res.ok) {
+                            this.showToast('Reserva confirmada com sucesso!', true);
+                            this.selectedSeat = null;
+                            await this.fetchSeats();
+                        } else {
+                            const data = await res.json();
+                            this.showToast(data.message || 'Falha na reserva.', false);
+                            this.selectedSeat = null;
+                            await this.fetchSeats();
+                        }
+                    } finally { this.processing = false; }
+                },
+
+                async initSeed() {
+                    try {
+                        await fetch(`${this.urls.booking}/seed`, { method: 'POST', headers: { 'Authorization': `Bearer ${this.token}` } });
+                        this.showToast('Catálogo atualizado!', true);
+                        location.reload();
+                    } catch (e) { this.showToast('Erro ao atualizar banco.', false); }
+                },
+
+                formatDate(dateStr) {
+                    const d = new Date(dateStr);
+                    return d.getHours() + ':' + d.getMinutes().toString().padStart(2, '0');
+                },
+
+                showToast(message, success) {
+                    this.toast = { show: true, message, success };
+                    setTimeout(() => this.toast.show = false, 4000);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
