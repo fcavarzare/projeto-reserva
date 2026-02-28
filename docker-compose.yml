@@ -56,8 +56,11 @@ services:
     container_name: payment-api
     ports:
       - "5001:8080"
+    environment:
+      - ConnectionStrings__RabbitMQ=rabbitmq
     depends_on:
       - sqlserver
+      - rabbitmq
     networks:
       - cinema-network
 
@@ -71,10 +74,12 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=BookingDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;
       - ConnectionStrings__Redis=redis:6379
+      - ConnectionStrings__RabbitMQ=rabbitmq
       - ExternalServices__PaymentApi=http://payment-api:8080
     depends_on:
       - sqlserver
       - redis
+      - rabbitmq
     networks:
       - cinema-network
 

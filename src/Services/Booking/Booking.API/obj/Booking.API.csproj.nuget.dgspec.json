@@ -57,6 +57,14 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "MassTransit": {
+              "target": "Package",
+              "version": "[8.2.5, )"
+            },
+            "MassTransit.RabbitMQ": {
+              "target": "Package",
+              "version": "[8.2.5, )"
+            },
             "MediatR": {
               "target": "Package",
               "version": "[14.0.0, )"
@@ -152,6 +160,10 @@
             "FluentValidation.DependencyInjectionExtensions": {
               "target": "Package",
               "version": "[12.1.1, )"
+            },
+            "MassTransit": {
+              "target": "Package",
+              "version": "[8.2.5, )"
             },
             "MediatR": {
               "target": "Package",
