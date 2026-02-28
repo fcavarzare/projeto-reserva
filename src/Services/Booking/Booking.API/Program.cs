@@ -14,6 +14,7 @@ using System.Text.Json;
 
 using MassTransit;
 using Booking.Application.Contracts;
+using Booking.API.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,11 +36,19 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 // 2.1 MassTransit (RabbitMQ)
 builder.Services.AddMassTransit(x =>
 {
+    // Registrar o Consumidor de resposta de pagamento
+    x.AddConsumer<PaymentProcessedConsumer>();
+
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host(builder.Configuration.GetConnectionString("RabbitMQ") ?? "booking-rabbitmq", "/", h => {
+        cfg.Host(builder.Configuration.GetConnectionString("RabbitMQ") ?? "rabbitmq", "/", h => {
             h.Username("guest");
             h.Password("guest");
+        });
+
+        cfg.ReceiveEndpoint("payment-processed-queue", e =>
+        {
+            e.ConfigureConsumer<PaymentProcessedConsumer>(context);
         });
     });
 });
