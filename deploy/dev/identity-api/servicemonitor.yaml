@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: identity-api
+  namespace: dev
+  labels:
+    release: kps
+    app: identity-api
+spec:
+  selector:
+    matchLabels:
+      app: identity-api
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s

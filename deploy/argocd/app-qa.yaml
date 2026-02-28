@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: projeto-reserva-qa
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/fcavarzare/projeto-reserva.git
+    targetRevision: main
+    path: deploy/qa
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: qa
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

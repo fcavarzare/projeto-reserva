@@ -1,0 +1,47 @@
+name: ci-web-ui
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "src/Web/**"
+
+permissions:
+  contents: write
+
+env:
+  IMAGE_NAME: fcavarzare/projeto-reserva-web-ui
+
+jobs:
+  build_push_and_update_dev:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/Web/Dockerfile
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}, ${{ env.IMAGE_NAME }}:latest
+      - name: Update DEV manifest
+        shell: bash
+        run: |
+          DEV_FILE="deploy/dev/web-ui/deployment.yaml"
+          NEW_IMAGE="${IMAGE_NAME}:${GITHUB_SHA}"
+          awk -v new_image="$NEW_IMAGE" 'BEGIN{done=0} {if(!done && $1=="image:"){match($0, /^[[:space:]]*/); indent=substr($0, RSTART, RLENGTH); print indent "image: " new_image; done=1} else print}' "$DEV_FILE" > "$DEV_FILE.tmp" && mv "$DEV_FILE.tmp" "$DEV_FILE"
+      - name: Commit & push
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add deploy/dev/web-ui/deployment.yaml
+          git commit -m "chore(dev): update web-ui image ${GITHUB_SHA} [skip ci]"
+          git push origin HEAD:main

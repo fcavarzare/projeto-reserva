@@ -1,0 +1,50 @@
+name: promote-dev-to-qa
+
+on:
+  workflow_dispatch: # Gatilho manual para promover quando quiser
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Promote All Microservices to QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          services=("booking-api" "payment-api" "identity-api" "web-ui")
+          
+          for service in "${services[@]}"; do
+            DEV_FILE="deploy/dev/$service/deployment.yaml"
+            QA_FILE="deploy/qa/$service/deployment.yaml"
+            
+            if [[ -f "$DEV_FILE" ]]; then
+              # Pegar a imagem que esta no DEV
+              IMAGE=$(awk '$1=="image:"{print $2; exit}' "$DEV_FILE")
+              echo "Promoting $service image $IMAGE to QA..."
+              
+              # Garantir que a pasta de QA exista
+              mkdir -p "deploy/qa/$service"
+              
+              # Criar o arquivo de QA baseado no de DEV mas trocando o namespace
+              sed "s/namespace: dev/namespace: qa/g" "$DEV_FILE" > "$QA_FILE"
+              
+              # Garantir que a imagem seja a mesma
+              awk -v new_image="$IMAGE" 'BEGIN{done=0} {if(!done && $1=="image:"){match($0, /^[[:space:]]*/); indent=substr($0, RSTART, RLENGTH); print indent "image: " new_image; done=1} else print}' "$QA_FILE" > "$QA_FILE.tmp" && mv "$QA_FILE.tmp" "$QA_FILE"
+            fi
+          done
+
+      - name: Commit & push QA updates
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add deploy/qa/
+          git commit -m "chore(qa): promote images from dev [skip ci]" || echo "No changes"
+          git push origin HEAD:main
