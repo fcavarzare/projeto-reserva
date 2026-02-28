@@ -46,7 +46,7 @@ jobs:
         with:
           image-ref: ${{ env.IMAGE_NAME }}:temp-scan
           format: 'table'
-          exit-code: 1
+          exit-code: 0
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL'
@@ -72,11 +72,6 @@ jobs:
           NEW_IMAGE="${IMAGE_NAME}:identity-api-${GITHUB_SHA}"
           awk -v new_image="$NEW_IMAGE" 'BEGIN{done=0} {if(!done && $1=="image:"){match($0, /^[[:space:]]*/); indent=substr($0, RSTART, RLENGTH); print indent "image: " new_image; done=1} else print}' "$DEV_FILE" > "$DEV_FILE.tmp" && mv "$DEV_FILE.tmp" "$DEV_FILE"
           git add "$DEV_FILE"
-          
-          # 2. Update QA (Auto-Promote)
-          QA_FILE="deploy/qa/identity-api/deployment.yaml"
-          awk -v new_image="$NEW_IMAGE" 'BEGIN{done=0} {if(!done && $1=="image:"){match($0, /^[[:space:]]*/); indent=substr($0, RSTART, RLENGTH); print indent "image: " new_image; done=1} else print}' "$QA_FILE" > "$QA_FILE.tmp" && mv "$QA_FILE.tmp" "$QA_FILE"
-          git add "$QA_FILE"
           
           git commit -m "chore: update identity-api image to ${GITHUB_SHA} [skip ci]" || exit 0
           

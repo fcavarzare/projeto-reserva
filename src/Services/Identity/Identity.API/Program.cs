@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Database para Identity
-var connectionString = "Server=100.100.100.104,1433;Database=IdentityDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;";
+var connectionString = builder.Configuration.GetConnectionString("IdentityDbContext");
 builder.Services.AddDbContext<IdentityDbContext>(options =>
     options.UseSqlServer(connectionString));
 

@@ -28,20 +28,13 @@ spec:
       initContainers:
       - name: wait-for-deps
         image: alpine:latest
-        command: ['sh', '-c', 'until nc -z sqlserver-service 1433 && nc -z rabbitmq-service 5672; do echo waiting for sqlserver and rabbitmq; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z sqlserver-service 1433; do echo waiting for sqlserver; sleep 2; done;']
         resources:
           limits:
             cpu: "50m"
             memory: "64Mi"
           requests:
             cpu: "50m"
-            memory: "64Mi"
-        resources:
-          limits:
-            cpu: "200m"
-            memory: "64Mi"
-          requests:
-            cpu: "200m"
             memory: "64Mi"
       containers:
       - name: identity-api

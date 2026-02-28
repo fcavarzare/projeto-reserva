@@ -38,13 +38,6 @@ spec:
           requests:
             cpu: "50m"
             memory: "64Mi"
-        resources:
-          limits:
-            cpu: "200m"
-            memory: "64Mi"
-          requests:
-            cpu: "200m"
-            memory: "64Mi"
       containers:
       - name: booking-api
         image: fcavarzare/projeto-reserva:booking-api-0ce34dfac9cda9457e61dc70566fb8ac23d9b14c
