@@ -30,8 +30,6 @@ spec:
         image: fcavarzare/projeto-reserva:identity-api-0ce34dfac9cda9457e61dc70566fb8ac23d9b14c
         ports:
         - containerPort: 8080
-
-
         env:
         - name: ConnectionStrings__IdentityDbContext
           value: "Server=sqlserver-service;Database=IdentityDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"

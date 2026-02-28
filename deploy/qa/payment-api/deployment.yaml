@@ -30,8 +30,6 @@ spec:
         image: fcavarzare/projeto-reserva:payment-api-0ce34dfac9cda9457e61dc70566fb8ac23d9b14c
         ports:
         - containerPort: 8080
-
-
         env:
         - name: ConnectionStrings__RabbitMQ
           value: "rabbitmq-service"

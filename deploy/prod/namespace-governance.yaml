@@ -11,22 +11,7 @@ metadata:
 spec:
   hard:
     requests.cpu: "4000m"
-    requests.memory: "4Gi"
+    requests.memory: "6Gi"
     limits.cpu: "8000m"
-    limits.memory: "8Gi"
+    limits.memory: "12Gi"
     pods: "20"
----
-apiVersion: v1
-kind: LimitRange
-metadata:
-  name: default-limits
-  namespace: prod
-spec:
-  limits:
-  - default:
-      cpu: "500m"
-      memory: "512Mi"
-    defaultRequest:
-      cpu: "100m"
-      memory: "256Mi"
-    type: Container

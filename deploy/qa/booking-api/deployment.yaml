@@ -33,8 +33,6 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
-
-
         env:
         - name: ConnectionStrings__DefaultConnection
           value: "Server=sqlserver-service;Database=BookingDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
