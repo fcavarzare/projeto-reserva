@@ -25,6 +25,17 @@ public class ReservationsController : ControllerBase
         _context = context;
     }
 
+    [HttpGet("shows")]
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+    public async Task<IActionResult> GetShows()
+    {
+        var shows = await _context.Shows
+            .Include(s => s.Movie)
+            .Include(s => s.Theater)
+            .ToListAsync();
+        return Ok(shows);
+    }
+
     [HttpGet("seats/{sessionId}")]
     [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public async Task<IActionResult> GetSeats(Guid sessionId)
