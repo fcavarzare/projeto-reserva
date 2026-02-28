@@ -29,8 +29,8 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       initContainers:
       - name: wait-for-deps
-        image: fcavarzare/projeto-reserva:booking-api-e2d5c0553bf348b75534720d69c6e09ba2aaa1d0
-        command: ['sh', '-c', 'apk add --no-cache netcat-openbsd && until nc -z -w 2 100.100.100.104 1433 && nc -z -w 2 rabbitmq-service 5672; do echo waiting for sqlserver and rabbitmq; sleep 2; done;']
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z -w 2 100.100.100.104 1433 && nc -z -w 2 rabbitmq-service 5672; do echo waiting for sqlserver and rabbitmq; sleep 2; done;']
         resources:
           limits:
             cpu: "50m"
