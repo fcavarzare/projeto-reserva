@@ -27,7 +27,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       initContainers:
       - name: wait-for-deps
-        image: alpine:latest
+        image: fcavarzare/projeto-reserva:identity-api-3c526f20dc176b0d776e63cb2c66320bd3152f54
         command: ['sh', '-c', 'until nc -z sqlserver-service 1433; do echo waiting for sqlserver; sleep 2; done;']
         resources:
           limits:
