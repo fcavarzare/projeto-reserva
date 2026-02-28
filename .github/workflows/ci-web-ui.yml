@@ -5,6 +5,8 @@ on:
     branches: ["main"]
     paths:
       - "src/Web/**"
+  workflow_dispatch: {}
+      - "src/Web/**"
 
 permissions:
   contents: write
@@ -49,3 +51,4 @@ jobs:
             git pull --rebase origin main
             git push origin HEAD:main && break || sleep 5
           done
+

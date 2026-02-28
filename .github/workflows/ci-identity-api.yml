@@ -5,6 +5,8 @@ on:
     branches: ["main"]
     paths:
       - "src/Services/Identity/**"
+  workflow_dispatch: {}
+      - "src/Services/Identity/**"
 
 permissions:
   contents: write
@@ -51,3 +53,4 @@ jobs:
             git pull --rebase origin main
             git push origin HEAD:main && break || sleep 5
           done
+
