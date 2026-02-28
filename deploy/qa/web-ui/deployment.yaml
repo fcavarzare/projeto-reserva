@@ -57,7 +57,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: projeto-reserva.dev.local
+  - host: projeto-reserva.qa.local
     http:
       paths:
       - path: /
