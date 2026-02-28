@@ -77,6 +77,13 @@ spec:
             name: booking-api-service
             port:
               number: 80
+      - path: /api/movies
+        pathType: Prefix
+        backend:
+          service:
+            name: booking-api-service
+            port:
+              number: 80
       - path: /api/auth
         pathType: Prefix
         backend:
