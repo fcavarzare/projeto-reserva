@@ -55,8 +55,41 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 1. Atualizar DEV
+          git add deploy/dev/payment-api/deployment.yaml
+          git commit -m "chore(dev): update payment-api image ${GITHUB_SHA} [skip ci]" || echo "No changes in dev"
+          
+          # 2. Auto-Promote para QA (Igual ao form-app)
+          QA_FILE="deploy/qa/payment-api/deployment.yaml"
+          NEW_IMAGE=":payment-api-${GITHUB_SHA}"
+          awk -v new_image="$NEW_IMAGE" 'BEGIN{done=0} {if(!done && $1=="image:"){match(      - name: Commit & push
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add deploy/dev/payment-api/deployment.yaml
           git commit -m "chore(dev): update payment-api image ${GITHUB_SHA} [skip ci]" || exit 0
+          for i in {1..5}; do
+            git pull --rebase origin main
+            git push origin HEAD:main && break || sleep 5
+          done
+, /^[[:space:]]*/); indent=substr(      - name: Commit & push
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add deploy/dev/payment-api/deployment.yaml
+          git commit -m "chore(dev): update payment-api image ${GITHUB_SHA} [skip ci]" || exit 0
+          for i in {1..5}; do
+            git pull --rebase origin main
+            git push origin HEAD:main && break || sleep 5
+          done
+, RSTART, RLENGTH); print indent "image: " new_image; done=1} else print}' " $QA_FILE" > " $QA_FILE.tmp" && mv " $QA_FILE.tmp" " $QA_FILE"
+          
+          git add deploy/qa/payment-api/deployment.yaml
+          git commit -m "chore(qa): auto-promote payment-api from dev ${GITHUB_SHA} [skip ci]" || echo "No changes in qa"
+          
           for i in {1..5}; do
             git pull --rebase origin main
             git push origin HEAD:main && break || sleep 5
