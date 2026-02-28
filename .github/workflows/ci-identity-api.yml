@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 env:
-  IMAGE_NAME: fcavarzare/projeto-reserva-identity-api
+  IMAGE_NAME: fcavarzare/projeto-reserva
 
 jobs:
   build_push_and_update_dev:
@@ -24,13 +24,15 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build & Push
+      - name: Build & Push final image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: src/Services/Identity/Identity.API/Dockerfile
           push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}, ${{ env.IMAGE_NAME }}:latest
+          tags: |
+            ${{ env.IMAGE_NAME }}:identity-api-${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:identity-api-latest
       - name: Update DEV manifest
         shell: bash
         run: |

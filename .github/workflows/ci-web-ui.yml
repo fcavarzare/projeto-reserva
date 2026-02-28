@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 env:
-  IMAGE_NAME: fcavarzare/projeto-reserva-web-ui
+  IMAGE_NAME: fcavarzare/projeto-reserva
 
 jobs:
   build_push_and_update_dev:
@@ -30,7 +30,7 @@ jobs:
           context: .
           file: src/Web/Dockerfile
           push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}, ${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.IMAGE_NAME }}:web-ui-${{ github.sha }}, ${{ env.IMAGE_NAME }}:web-ui-latest
       - name: Update DEV manifest
         shell: bash
         run: |
