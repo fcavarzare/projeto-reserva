@@ -12,27 +12,7 @@ spec:
   - Egress
   ingress:
   - from:
-    - namespaceSelector:
-        matchLabels:
-          kubernetes.io/metadata.name: ingress-nginx
-    - podSelector:
-        matchLabels:
-          app: web-ui
+    - podSelector: {} # Permite de qualquer pod no mesmo namespace
   egress:
   - to:
-    - podSelector:
-        matchLabels:
-          app: sqlserver
-    - podSelector:
-        matchLabels:
-          app: redis
-    - podSelector:
-        matchLabels:
-          app: rabbitmq
-    ports:
-    - protocol: TCP
-      port: 1433
-    - protocol: TCP
-      port: 6379
-    - protocol: TCP
-      port: 5672
+    - podSelector: {} # Permite para qualquer pod no mesmo namespace
