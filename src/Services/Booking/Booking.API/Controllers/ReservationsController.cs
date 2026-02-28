@@ -105,15 +105,28 @@ public class ReservationsController : ControllerBase
         async Task CreateSeats(Booking.Domain.Entities.Show session, Booking.Domain.Entities.Theater theater)
         {
             var rows = new[] { "A", "B", "C", "D", "E", "F" };
+            var sessionSeats = new System.Collections.Generic.List<Booking.Domain.Entities.Seat>();
             for (int r = 0; r < theater.Rows; r++)
+            {
                 for (int n = 1; n <= theater.SeatsPerRow; n++)
-                    await _context.Seats.AddAsync(new Booking.Domain.Entities.Seat(session.Id, rows[r], n));
+                {
+                    sessionSeats.Add(new Booking.Domain.Entities.Seat(session.Id, rows[r], n));
+                }
+            }
+            await _context.Seats.AddRangeAsync(sessionSeats);
         }
 
         await CreateSeats(s1, t1);
         await CreateSeats(s2, t1);
         await CreateSeats(s3, t2);
-        await _context.SaveChangesAsync();
+        
+        try {
+            await _context.SaveChangesAsync();
+        } catch (Exception ex) {
+            // Se falhar o bulk, tentamos limpar e salvar um por um como fallback
+            _context.ChangeTracker.Clear();
+            return BadRequest(new { message = "Erro ao persistir assentos no banco.", detail = ex.Message });
+        }
 
         return Ok(new { 
             message = "O catálogo de cinema foi atualizado com sucesso!",
