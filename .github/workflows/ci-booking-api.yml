@@ -65,7 +65,7 @@ jobs:
         run: |
           set -euo pipefail
           DEV_FILE="deploy/dev/booking-api/deployment.yaml"
-          NEW_IMAGE="${IMAGE_NAME}:${GITHUB_SHA}"
+          NEW_IMAGE="${IMAGE_NAME}:booking-api-${GITHUB_SHA}"
 
           [[ -f "$DEV_FILE" ]] || { echo "ERROR: $DEV_FILE not found"; exit 1; }
 

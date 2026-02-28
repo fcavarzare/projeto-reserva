@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           DEV_FILE="deploy/dev/identity-api/deployment.yaml"
-          NEW_IMAGE="${IMAGE_NAME}:${GITHUB_SHA}"
+          NEW_IMAGE="${IMAGE_NAME}:identity-api-${GITHUB_SHA}"
           awk -v new_image="$NEW_IMAGE" 'BEGIN{done=0} {if(!done && $1=="image:"){match($0, /^[[:space:]]*/); indent=substr($0, RSTART, RLENGTH); print indent "image: " new_image; done=1} else print}' "$DEV_FILE" > "$DEV_FILE.tmp" && mv "$DEV_FILE.tmp" "$DEV_FILE"
       - name: Commit & push
         shell: bash
