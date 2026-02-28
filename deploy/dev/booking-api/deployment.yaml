@@ -30,7 +30,7 @@ spec:
       initContainers:
       - name: wait-for-deps
         image: alpine:latest
-        command: ['sh', '-c', 'until nc -z sqlserver-service 1433 && nc -z rabbitmq-service 5672; do echo waiting for sqlserver and rabbitmq; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z -w 2 sqlserver-service 1433 && nc -z -w 2 rabbitmq-service 5672; do echo waiting for sqlserver and rabbitmq; sleep 2; done;']
         resources:
           limits:
             cpu: "50m"
