@@ -28,7 +28,7 @@ spec:
       initContainers:
       - name: wait-for-deps
 <<<<<<< HEAD
-        image: alpine:latest
+        image: fcavarzare/projeto-reserva:identity-api-887a7ecabe0dfc46aa6cceba9656e273dca2933c
         command: ['sh', '-c', 'until nc -z -w 2 sqlserver-service 1433; do echo waiting for sqlserver; sleep 2; done;']
 =======
         image: fcavarzare/projeto-reserva:identity-api-3c526f20dc176b0d776e63cb2c66320bd3152f54
