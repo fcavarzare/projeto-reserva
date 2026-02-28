@@ -18,10 +18,16 @@ spec:
       - name: argocd-server
         image: quay.io/argoproj/argocd:v2.10.4
         command: ["/usr/local/bin/argocd-server"]
-        args: []
+        args: ["--insecure"] # Usando insecure temporariamente para estabilizar o login, depois removemos se necessário
         ports:
         - containerPort: 8080
         - containerPort: 8083
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: argocd-redis
+              key: auth
         livenessProbe:
           httpGet:
             path: /healthz
