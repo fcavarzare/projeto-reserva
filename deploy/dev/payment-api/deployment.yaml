@@ -38,7 +38,8 @@ spec:
             memory: "64Mi"
       containers:
       - name: payment-api
-        image: fcavarzare/projeto-reserva:payment-api-0ce34dfac9cda9457e61dc70566fb8ac23d9b14c
+        image: fcavarzare/projeto-reserva:payment-api-latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
@@ -60,8 +61,3 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
-
-
-
-
-

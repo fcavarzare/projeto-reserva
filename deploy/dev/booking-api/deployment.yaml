@@ -29,7 +29,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       initContainers:
       - name: wait-for-deps
-        image: fcavarzare/projeto-reserva:booking-api-887a7ecabe0dfc46aa6cceba9656e273dca2933c
+        image: alpine:latest
         command: ['sh', '-c', 'until nc -z -w 2 sqlserver-service 1433 && nc -z -w 2 rabbitmq-service 5672; do echo waiting for sqlserver and rabbitmq; sleep 2; done;']
         resources:
           limits:
@@ -40,8 +40,8 @@ spec:
             memory: "64Mi"
       containers:
       - name: booking-api
-        image: fcavarzare/projeto-reserva:booking-api-0ce34dfac9cda9457e61dc70566fb8ac23d9b14c
-        imagePullPolicy: IfNotPresent
+        image: fcavarzare/projeto-reserva:booking-api-latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
@@ -74,8 +74,3 @@ spec:
     port: 80
     targetPort: 8080
   type: ClusterIP
-
-
-
-
-
