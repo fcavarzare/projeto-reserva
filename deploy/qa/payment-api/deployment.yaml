@@ -25,6 +25,10 @@ spec:
                   values:
                   - payment-api
               topologyKey: "kubernetes.io/hostname"
+      initContainers:
+      - name: wait-for-sql
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z sqlserver-service 1433; do echo waiting for sqlserver; sleep 2; done;']
       containers:
       - name: payment-api
         image: fcavarzare/projeto-reserva:payment-api-0ce34dfac9cda9457e61dc70566fb8ac23d9b14c
@@ -49,4 +53,5 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
+
 

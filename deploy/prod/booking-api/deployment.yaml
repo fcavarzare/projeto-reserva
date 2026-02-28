@@ -27,6 +27,10 @@ spec:
                   values:
                   - booking-api
               topologyKey: "kubernetes.io/hostname"
+      initContainers:
+      - name: wait-for-sql
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z sqlserver-service 1433; do echo waiting for sqlserver; sleep 2; done;']
       containers:
       - name: booking-api
         image: fcavarzare/projeto-reserva:booking-api-latest
@@ -63,4 +67,5 @@ spec:
     port: 80
     targetPort: 8080
   type: ClusterIP
+
 
