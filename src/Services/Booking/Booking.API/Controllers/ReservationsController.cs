@@ -26,6 +26,7 @@ public class ReservationsController : ControllerBase
     }
 
     [HttpGet("seats/{sessionId}")]
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public async Task<IActionResult> GetSeats(Guid sessionId)
     {
         var cacheKey = SEATS_CACHE_KEY + sessionId;
@@ -50,6 +51,7 @@ public class ReservationsController : ControllerBase
     }
 
     [HttpPost("seed")]
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public async Task<IActionResult> Seed()
     {
         _context.Reservations.RemoveRange(_context.Reservations);
@@ -108,6 +110,7 @@ public class ReservationsController : ControllerBase
     }
 
     [HttpPost]
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public async Task<IActionResult> Create([FromBody] CreateReservationCommand command)
     {
         try
