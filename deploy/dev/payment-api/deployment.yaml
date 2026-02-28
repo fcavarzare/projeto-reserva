@@ -47,8 +47,8 @@ spec:
           value: "rabbitmq-service"
         resources:
           limits:
-            cpu: "500m"
-            memory: "512Mi"
+            cpu: "50m"
+            memory: "128Mi"
 ---
 apiVersion: v1
 kind: Service
