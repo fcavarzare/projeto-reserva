@@ -69,6 +69,19 @@ services:
     networks:
       - cinema-network
 
+  web-ui:
+    build:
+      context: .
+      dockerfile: src/Web/Dockerfile
+    container_name: web-ui
+    ports:
+      - "80:80"
+    depends_on:
+      - booking-api
+      - identity-api
+    networks:
+      - cinema-network
+
 networks:
   cinema-network:
     driver: bridge
