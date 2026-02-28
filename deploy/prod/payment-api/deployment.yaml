@@ -4,7 +4,7 @@ metadata:
   name: payment-api
   namespace: prod
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: payment-api
@@ -30,18 +30,8 @@ spec:
         image: fcavarzare/projeto-reserva:payment-api-latest
         ports:
         - containerPort: 8080
-        readinessProbe:
-          httpGet:
-            path: /health/ready
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 15
-        livenessProbe:
-          httpGet:
-            path: /health/live
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 30
+
+
         env:
         - name: ConnectionStrings__RabbitMQ
           value: "rabbitmq-service"
@@ -61,3 +51,4 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
+

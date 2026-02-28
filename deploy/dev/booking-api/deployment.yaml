@@ -33,18 +33,8 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
-        readinessProbe:
-          httpGet:
-            path: /health/ready
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 15
-        livenessProbe:
-          httpGet:
-            path: /health/live
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 30
+
+
         env:
         - name: ConnectionStrings__DefaultConnection
           value: "Server=sqlserver-service;Database=BookingDb;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
@@ -73,3 +63,4 @@ spec:
     port: 80
     targetPort: 8080
   type: ClusterIP
+

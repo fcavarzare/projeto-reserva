@@ -4,7 +4,7 @@ metadata:
   name: web-ui
   namespace: prod
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: web-ui
@@ -74,3 +74,4 @@ spec:
             name: booking-api-service
             port:
               number: 80
+
