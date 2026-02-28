@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Cinema - Dashboard Profissional</title>
+    <title>Cinena System - 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
     <style> 
@@ -23,7 +23,7 @@
             
             <form @submit.prevent="authMode === 'login' ? login() : register()" class="space-y-6">
                 <input type="text" x-model="loginForm.username" class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 text-sm" placeholder="Nome de usuário">
-                <input type="password" x-model="loginForm.password" class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 text-sm" placeholder="Sua senha secreta">
+                <input type="password" x-model="loginForm.password" class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 text-sm" placeholder="Sua senha">
                 
                 <button type="submit" :disabled="loading" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl shadow-xl transition-all uppercase tracking-widest text-sm">
                     <span x-show="!loading" x-text="authMode === 'login' ? 'Acessar o Sistema' : 'Finalizar Cadastro'"></span>
