@@ -10,58 +10,27 @@ data:
   # RabbitMQ guest:guest
   rabbitmq-pass: Z3Vlc3Q=
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: booking-sqlserver
-  namespace: prod
-spec:
-  selector:
-    matchLabels:
-      app: sqlserver
-  template:
-    metadata:
-      labels:
-        app: sqlserver
-    spec:
-      volumes:
-      - name: mssql-storage
-        emptyDir: {}
-      containers:
-      - name: mssql
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        resources:
-          limits:
-            cpu: "1500m"
-            memory: "3Gi"
-          requests:
-            cpu: "500m"
-            memory: "3Gi"
-        ports:
-        - containerPort: 1433
-        volumeMounts:
-        - name: mssql-storage
-          mountPath: /var/opt/mssql
-        env:
-        - name: ACCEPT_EULA
-          value: "Y"
-        - name: MSSQL_SA_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: booking-secrets
-              key: sql-password
----
+# Redirecionamento para o SQL Server Externo (100.100.100.104)
 apiVersion: v1
 kind: Service
 metadata:
   name: sqlserver-service
   namespace: prod
 spec:
-  selector:
-    app: sqlserver
   ports:
   - port: 1433
     targetPort: 1433
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: sqlserver-service
+  namespace: prod
+subsets:
+- addresses:
+  - ip: 100.100.100.104
+  ports:
+  - port: 1433
 ---
 apiVersion: apps/v1
 kind: Deployment
