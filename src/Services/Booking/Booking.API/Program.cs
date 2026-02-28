@@ -17,6 +17,7 @@ using Booking.Application.Contracts;
 using Booking.API.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
+// Trigger CI Pipeline - Force sync with stable manifests
 
 // 1. Database (SQL Server)
 builder.Services.AddDbContext<BookingDbContext>(options =>
