@@ -29,8 +29,8 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       initContainers:
       - name: wait-for-deps
-        image: busybox:1.36
-        command: ['sh', '-c', 'until printf "" > /dev/tcp/100.100.100.104/1433 && printf "" > /dev/tcp/rabbitmq-service/5672; do echo waiting for dependencies; sleep 2; done;']
+        image: busybox:latest
+        command: ['sh', '-c', 'until nc -z -w 2 100.100.100.104 1433 && nc -z -w 2 rabbitmq-service 5672; do echo waiting for dependencies; sleep 2; done;']
         resources:
           limits:
             cpu: "50m"
