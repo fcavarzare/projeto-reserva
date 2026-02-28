@@ -30,6 +30,13 @@ spec:
       containers:
       - name: mssql
         image: mcr.microsoft.com/mssql/server:2022-latest
+                resources:
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
         ports:
         - containerPort: 1433
         resources:
@@ -59,7 +66,14 @@ metadata:
 spec:
   selector:
     app: sqlserver
-  ports:
+          resources:
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+        ports:
   - port: 1433
     targetPort: 1433
 ---
@@ -83,6 +97,13 @@ spec:
       containers:
       - name: redis
         image: redis:latest
+                resources:
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
         ports:
         - containerPort: 6379
 ---
@@ -94,7 +115,14 @@ metadata:
 spec:
   selector:
     app: redis
-  ports:
+          resources:
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+        ports:
   - port: 6379
     targetPort: 6379
 ---
@@ -118,6 +146,13 @@ spec:
       containers:
       - name: rabbitmq
         image: rabbitmq:3-management
+                resources:
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
         ports:
         - containerPort: 5672
         - containerPort: 15672
@@ -130,12 +165,20 @@ metadata:
 spec:
   selector:
     app: rabbitmq
-  ports:
+          resources:
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+        ports:
   - name: amqp
     port: 5672
     targetPort: 5672
   - name: management
     port: 15672
     targetPort: 15672
+
 
 
