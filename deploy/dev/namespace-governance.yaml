@@ -14,4 +14,4 @@ spec:
     requests.memory: "10Gi"
     limits.cpu: "8000m"
     limits.memory: "16Gi"
-    pods: "20"
+    pods: "50"
