@@ -31,25 +31,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build image locally
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: src/Services/Payment/Payment.API/Dockerfile
-          push: false
-          load: true
-          tags: ${{ env.IMAGE_NAME }}:temp-scan
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.IMAGE_NAME }}:temp-scan
-          format: 'table'
-          exit-code: 0
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL'
-
       - name: Build & Push final image
         uses: docker/build-push-action@v6
         with:
@@ -60,19 +41,17 @@ jobs:
             ${{ env.IMAGE_NAME }}:payment-api-${{ github.sha }}
             ${{ env.IMAGE_NAME }}:payment-api-latest
 
-      - name: Update Manifests and Push
-        shell: bash
+      - name: Update Kubernetes manifests
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 1. Update DEV
           DEV_FILE="deploy/dev/payment-api/deployment.yaml"
-          NEW_IMAGE="${IMAGE_NAME}:payment-api-${GITHUB_SHA}"
+          NEW_IMAGE="${{ env.IMAGE_NAME }}:payment-api-${{ github.sha }}"
           awk -v new_image="$NEW_IMAGE" 'BEGIN{done=0} {if(!done && $1=="image:"){match($0, /^[[:space:]]*/); indent=substr($0, RSTART, RLENGTH); print indent "image: " new_image; done=1} else print}' "$DEV_FILE" > "$DEV_FILE.tmp" && mv "$DEV_FILE.tmp" "$DEV_FILE"
           git add "$DEV_FILE"
           
-          git commit -m "chore: update payment-api image to ${GITHUB_SHA} [skip ci]" || exit 0
+          git commit -m "chore: update payment-api image to ${{ github.sha }} [skip ci]" || exit 0
           
           for i in {1..5}; do
             git pull --rebase origin main

@@ -15,3 +15,9 @@ docker-compose*
 *.user
 *.suo
 *.pdb
+**/*.md
+deploy/
+publish/
+README.md
+LICENSE
+docs/
