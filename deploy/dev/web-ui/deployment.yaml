@@ -27,7 +27,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
       - name: web-ui
-        image: fcavarzare/projeto-reserva:web-ui-c8cf758c6809ca09e795423fd6110e33e041fcfa
+        image: fcavarzare/projeto-reserva:web-ui-9e7b79b05fe9cb77a82d1fa078e0710f9de0da55
         imagePullPolicy: Always
         ports:
         - containerPort: 80
