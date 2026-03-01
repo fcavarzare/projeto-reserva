@@ -24,7 +24,8 @@ builder.Services.AddMassTransit(x =>
 });
 
 builder.Services.AddControllers();
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddRabbitMQ(new Uri($"amqp://guest:guest@{builder.Configuration.GetConnectionString("RabbitMQ") ?? "rabbitmq"}:5672"), name: "rabbitmq");
 
 var app = builder.Build();
 
