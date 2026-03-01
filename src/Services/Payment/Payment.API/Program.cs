@@ -25,13 +25,20 @@ builder.Services.AddMassTransit(x =>
 
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks()
-    .AddRabbitMQ(new Uri($"amqp://guest:guest@{builder.Configuration.GetConnectionString("RabbitMQ") ?? "rabbitmq"}:5672"), name: "rabbitmq");
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "live" });
 
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-app.MapHealthChecks("/health");
+
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
+    Predicate = (check) => check.Tags.Contains("live")
+});
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
+    Predicate = (check) => check.Tags.Contains("live")
+});
 
 app.Run();

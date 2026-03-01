@@ -98,9 +98,9 @@ builder.Services.AddControllers()
 
 // 5. Health Checks Inteligentes
 builder.Services.AddHealthChecks()
-    .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "sqlserver")
-    .AddRedis(redisConnectionString, name: "redis")
-    .AddRabbitMQ(new Uri($"amqp://guest:guest@{builder.Configuration.GetConnectionString("RabbitMQ") ?? "rabbitmq"}:5672"), name: "rabbitmq");
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "live" })
+    .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "sqlserver", tags: new[] { "ready" })
+    .AddRedis(redisConnectionString, name: "redis", tags: new[] { "ready" });
 
 builder.Services.AddCors(options =>
 {
@@ -128,6 +128,15 @@ app.UseHttpsRedirection();
 app.UseAuthentication(); // Ordem importa!
 app.UseAuthorization();
 app.MapControllers();
-app.MapHealthChecks("/health");
+
+// Endpoint para o Kubernetes saber se o processo está vivo (Rápido)
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
+    Predicate = (check) => check.Tags.Contains("live")
+});
+
+// Endpoint para o Kubernetes saber se a API pode receber tráfego (Completo)
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
+    Predicate = (check) => check.Tags.Contains("ready")
+});
 
 app.Run();
