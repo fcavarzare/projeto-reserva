@@ -89,8 +89,8 @@ spec:
         volumeMounts:
         - name: rabbitmq-data
           mountPath: /var/lib/rabbitmq
-        volumes:
-        - name: rabbitmq-data
+      volumes:
+      - name: rabbitmq-data
         hostPath:
           path: /mnt/data/rabbitmq
           type: DirectoryOrCreate
