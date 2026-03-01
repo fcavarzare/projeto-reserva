@@ -40,11 +40,12 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// Garantir que o banco seja criado
+// AQUI ESTÁ A MUDANÇA: Usar Migrate() em vez de EnsureCreated()
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
-    db.Database.EnsureCreated();
+    // Isso vai apenas adicionar as colunas novas sem deletar nada!
+    db.Database.Migrate();
 }
 
 app.UseCors("AllowAll");

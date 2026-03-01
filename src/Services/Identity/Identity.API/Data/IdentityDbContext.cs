@@ -6,7 +6,10 @@ public class User
 {
     public Guid Id { get; set; }
     public string Username { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty; // No mundo real, use BCrypt ou Argon2
+    public string Email { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
+    public string? AvatarUrl { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
 public class IdentityDbContext : DbContext
@@ -17,5 +20,6 @@ public class IdentityDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
+        modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
     }
 }
