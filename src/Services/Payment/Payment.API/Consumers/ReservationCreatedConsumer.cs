@@ -20,8 +20,8 @@ public class ReservationCreatedConsumer : IConsumer<ReservationCreatedEvent>
         _logger.LogInformation("Processando pagamento da reserva {ReservationId} no valor de {Amount}", 
             message.ReservationId, message.Amount);
 
-        // Simulando processamento de pagamento
-        await Task.Delay(2000);
+        // Simulando processamento de pagamento por 10 segundos
+        await Task.Delay(10000);
 
         _logger.LogInformation("Pagamento da reserva {ReservationId} APROVADO!", message.ReservationId);
 
