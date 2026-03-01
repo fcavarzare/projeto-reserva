@@ -5,25 +5,23 @@ using Booking.Infrastructure.Data;
 using Booking.Infrastructure.ExternalServices;
 using Booking.Infrastructure.Repositories;
 using Booking.Infrastructure.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
-using System.Text;
 using System.Text.Json;
+using System.Security.Claims;
+using System.Security.Principal;
 
 using MassTransit;
 using Booking.Application.Contracts;
 using Booking.API.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
-// Trigger CI Pipeline - Force sync with stable manifests
 
 // 1. Database (SQL Server)
 builder.Services.AddDbContext<BookingDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Redis (Distributed Lock)
+// 2. Redis
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "booking-redis:6379";
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp => 
 {
@@ -34,47 +32,22 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     return ConnectionMultiplexer.Connect(config);
 });
 
-// 2.1 MassTransit (RabbitMQ)
+// 2.1 MassTransit
 builder.Services.AddMassTransit(x =>
 {
-    // Registrar o Consumidor de resposta de pagamento
     x.AddConsumer<PaymentProcessedConsumer>();
-
     x.UsingRabbitMq((context, cfg) =>
     {
         cfg.Host(builder.Configuration.GetConnectionString("RabbitMQ") ?? "rabbitmq", "/", h => {
             h.Username("guest");
             h.Password("guest");
         });
-
-        cfg.ReceiveEndpoint("payment-processed-queue", e =>
-        {
-            e.ConfigureConsumer<PaymentProcessedConsumer>(context);
-        });
+        cfg.ReceiveEndpoint("payment-processed-queue", e => e.ConfigureConsumer<PaymentProcessedConsumer>(context));
     });
 });
 
-// 3. Autenticacao JWT
-var secretKey = "O_Segredo_Mais_Seguro_Do_Mundo_2026_!@#";
-var key = Encoding.ASCII.GetBytes(secretKey);
-
-builder.Services.AddAuthentication(x =>
-{
-    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(x =>
-{
-    x.RequireHttpsMetadata = false;
-    x.SaveToken = true;
-    x.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false
-    };
-});
+// 3. Autenticação agora é via Gateway (Lemos o Header X-User-Id)
+builder.Services.AddAuthorization();
 
 // 4. Dependency Injection
 builder.Services.AddScoped<ISeatRepository, SeatRepository>();
@@ -91,12 +64,8 @@ builder.Services.AddMediatR(cfg => {
 });
 
 builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    });
+    .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 
-// 5. Health Checks Inteligentes
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "live" })
     .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "sqlserver", tags: new[] { "ready" })
@@ -104,37 +73,35 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
+    options.AddPolicy("AllowAll", policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
 var app = builder.Build();
 
-// Garantir que o banco e as novas tabelas (Movies, Theaters) existam
+// Middleware para "confiar" no usuário que o Gateway autenticou
+app.Use(async (context, next) =>
+{
+    if (context.Request.Headers.TryGetValue("X-User-Id", out var userId))
+    {
+        var identity = new GenericIdentity(userId!);
+        context.User = new ClaimsPrincipal(identity);
+    }
+    await next();
+});
+
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
-    // Isso vai criar as tabelas que faltam sem apagar os dados existentes 
-    // (ou criar tudo do zero se o banco for novo)
     context.Database.EnsureCreated();
 }
 
 app.UseCors("AllowAll");
-app.UseHttpsRedirection();
-app.UseAuthentication(); // Ordem importa!
 app.UseAuthorization();
 app.MapControllers();
 
-// Endpoint para o Kubernetes saber se o processo está vivo (Rápido)
 app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
     Predicate = (check) => check.Tags.Contains("live")
 });
-
-// Endpoint para o Kubernetes saber se a API pode receber tráfego (Completo)
 app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
     Predicate = (check) => check.Tags.Contains("ready")
 });

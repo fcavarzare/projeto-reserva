@@ -1,5 +1,7 @@
 using Identity.API.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.Security.Principal;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,17 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Middleware para "confiar" no usuário que o Gateway autenticou
+app.Use(async (context, next) =>
+{
+    if (context.Request.Headers.TryGetValue("X-User-Id", out var userId))
+    {
+        var identity = new GenericIdentity(userId!);
+        context.User = new ClaimsPrincipal(identity);
+    }
+    await next();
+});
 
 // Garantir que o banco seja criado
 using (var scope = app.Services.CreateScope())
