@@ -27,11 +27,12 @@
     <div x-show="!isLoggedIn" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0f172a]">
         <div class="glass p-10 rounded-[2.5rem] w-full max-w-md shadow-2xl relative z-10 text-center">
             <h2 class="text-3xl font-extrabold tracking-tighter text-white uppercase italic">Cinema <span class="text-blue-500">Premium</span></h2>
+            <p class="text-xs text-slate-500 mt-2 uppercase tracking-widest" x-text="authMode === 'login' ? 'Entre com sua conta' : 'Crie sua nova conta'"></p>
             <form @submit.prevent="authMode === 'login' ? login() : register()" class="space-y-5 mt-8">
                 <input type="text" x-model="loginForm.username" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none" placeholder="Usuário">
                 <input type="password" x-model="loginForm.password" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none" placeholder="Senha">
-                <button type="submit" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-xs">Acessar</button>
-                <button type="button" @click="authMode = (authMode === 'login' ? 'register' : 'login')" class="w-full text-xs text-slate-500 py-2">Cadastrar-se</button>
+                <button type="submit" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-xs" x-text="authMode === 'login' ? 'Acessar' : 'Confirmar Cadastro'"></button>
+                <button type="button" @click="authMode = (authMode === 'login' ? 'register' : 'login')" class="w-full text-xs text-slate-500 py-2" x-text="authMode === 'login' ? 'Ainda não tem conta? Cadastrar-se' : 'Já tem conta? Fazer Login'"></button>
             </form>
         </div>
     </div>

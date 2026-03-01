@@ -13,6 +13,7 @@ namespace Identity.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IdentityDbContext _context;
+    // IMPORTANTE: Esta chave deve ser IDENTICA à do ApiGateway
     private const string SecretKey = "O_Segredo_Mais_Seguro_Do_Mundo_2026_!@#";
 
     public AuthController(IdentityDbContext context)
@@ -24,19 +25,25 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] LoginRequest request)
     {
         if (await _context.Users.AnyAsync(u => u.Username == request.Username))
-            return BadRequest(new { message = "Usuario ja existe" });
+            return BadRequest(new { message = "Usuário já existe" });
 
         var user = new User 
         { 
             Id = Guid.NewGuid(), 
-            Username = request.Username, 
-            PasswordHash = request.Password // Simplificado: No real usaria Hash
+            Username = request.Username,
+            Email = $"{request.Username}@cinema.local", // Email default para não quebrar o banco
+            PasswordHash = request.Password, // No mundo real usaria Hash
+            CreatedAt = DateTime.UtcNow
         };
 
-        await _context.Users.AddAsync(user);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { message = "Usuario criado com sucesso" });
+        try {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Usuário criado com sucesso" });
+        }
+        catch (Exception ex) {
+            return BadRequest(new { message = "Erro ao criar usuário: " + ex.Message });
+        }
     }
 
     [HttpPost("login")]
@@ -51,7 +58,7 @@ public class AuthController : ControllerBase
             return Ok(new { token, user = user.Username });
         }
 
-        return Unauthorized(new { message = "Usuario ou senha invalidos" });
+        return Unauthorized(new { message = "Usuário ou senha inválidos" });
     }
 
     private string GenerateJwtToken(string username)
@@ -63,8 +70,7 @@ public class AuthController : ControllerBase
             Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }),
             Expires = DateTime.UtcNow.AddHours(2),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-            Issuer = "Identity.API",
-            Audience = "TicketSystem"
+            // Removidos Issuer e Audience para compatibilidade total com a validação do Gateway
         };
         return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
     }
