@@ -99,8 +99,7 @@ builder.Services.AddControllers()
 // 5. Health Checks Inteligentes
 builder.Services.AddHealthChecks()
     .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "sqlserver")
-    .AddRedis(redisConnectionString, name: "redis")
-    .AddRabbitMQ(new Uri($"amqp://guest:guest@{builder.Configuration.GetConnectionString("RabbitMQ") ?? "rabbitmq"}:5672"), name: "rabbitmq");
+    .AddRedis(redisConnectionString, name: "redis");
 
 builder.Services.AddCors(options =>
 {
