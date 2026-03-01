@@ -1,0 +1,12 @@
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\bin\Release\net9.0\Booking.Domain.deps.json
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\bin\Release\net9.0\Booking.Domain.dll
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\bin\Release\net9.0\Booking.Domain.pdb
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\obj\Release\net9.0\Booking.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\obj\Release\net9.0\Booking.Domain.AssemblyInfoInputs.cache
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\obj\Release\net9.0\Booking.Domain.AssemblyInfo.cs
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\obj\Release\net9.0\Booking.Domain.csproj.CoreCompileInputs.cache
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\obj\Release\net9.0\Booking.Domain.sourcelink.json
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\obj\Release\net9.0\Booking.Domain.dll
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\obj\Release\net9.0\refint\Booking.Domain.dll
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\obj\Release\net9.0\Booking.Domain.pdb
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Domain\obj\Release\net9.0\ref\Booking.Domain.dll

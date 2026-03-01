@@ -59,15 +59,15 @@
           "dependencies": {
             "AspNetCore.HealthChecks.Rabbitmq": {
               "target": "Package",
-              "version": "[9.0.0, )"
+              "version": "[8.0.2, )"
             },
             "AspNetCore.HealthChecks.Redis": {
               "target": "Package",
-              "version": "[9.0.0, )"
+              "version": "[8.0.1, )"
             },
             "AspNetCore.HealthChecks.SqlServer": {
               "target": "Package",
-              "version": "[9.0.0, )"
+              "version": "[8.0.2, )"
             },
             "MassTransit": {
               "target": "Package",

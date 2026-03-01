@@ -1,0 +1,16 @@
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\bin\Release\net9.0\Booking.Application.deps.json
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\bin\Release\net9.0\Booking.Application.dll
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\bin\Release\net9.0\Booking.Application.pdb
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\bin\Release\net9.0\Booking.Domain.dll
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\bin\Release\net9.0\Booking.Domain.pdb
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\obj\Release\net9.0\Booking.Application.csproj.AssemblyReference.cache
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\obj\Release\net9.0\Booking.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\obj\Release\net9.0\Booking.Application.AssemblyInfoInputs.cache
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\obj\Release\net9.0\Booking.Application.AssemblyInfo.cs
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\obj\Release\net9.0\Booking.Application.csproj.CoreCompileInputs.cache
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\obj\Release\net9.0\Booking.Application.sourcelink.json
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\obj\Release\net9.0\Booking..A3DD8563.Up2Date
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\obj\Release\net9.0\Booking.Application.dll
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\obj\Release\net9.0\refint\Booking.Application.dll
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\obj\Release\net9.0\Booking.Application.pdb
+C:\APPs - DEVOPS\projeto-reserva\src\Services\Booking\Booking.Application\obj\Release\net9.0\ref\Booking.Application.dll
