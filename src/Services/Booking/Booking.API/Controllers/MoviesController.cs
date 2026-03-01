@@ -23,6 +23,17 @@ public class MoviesController : ControllerBase
         return Ok(movies);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> CreateMovie([FromBody] MovieRequest request)
+    {
+        var movie = new Booking.Domain.Entities.Movie(request.Title, request.PosterUrl, request.Description);
+        _context.Movies.Add(movie);
+        await _context.SaveChangesAsync();
+        return Ok(movie);
+    }
+
+    public record MovieRequest(string Title, string PosterUrl, string Description);
+
     [HttpGet("{movieId}/sessions")]
     public async Task<IActionResult> GetSessions(Guid movieId)
     {
