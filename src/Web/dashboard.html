@@ -48,6 +48,9 @@
                     </nav>
                 </div>
                 <div class="flex items-center gap-6 text-[10px] font-bold">
+                    <button @click="refreshData()" class="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-xl uppercase hover:bg-blue-600/40 flex items-center gap-2 transition-all">
+                        <span :class="loading ? 'animate-spin' : ''">↻</span> Atualizar
+                    </button>
                     <button @click="initSeed()" class="bg-white/5 px-4 py-2 rounded-xl uppercase opacity-50 hover:opacity-100">Resetar Catálogo</button>
                     <p class="text-white" x-text="userName"></p>
                     <button @click="logout()" class="text-rose-500">✕</button>
@@ -279,6 +282,20 @@
                     await fetch(`${this.urls.booking}/seed`, { method: 'POST', headers: { 'Authorization': `Bearer ${this.token}` } });
                     this.showToast('Catálogo reiniciado!', true);
                     location.reload();
+                },
+                async refreshData() {
+                    this.loading = true;
+                    try {
+                        if (this.view === 'my-reservations') await this.fetchMyReservations();
+                        else if (this.view === 'seats') await this.fetchSeats();
+                        else if (this.view === 'catalog') await this.fetchMovies();
+                        else if (this.view === 'sessions' && this.selectedMovie) await this.selectMovie(this.selectedMovie);
+                        this.showToast('Dados atualizados!', true);
+                    } catch (e) {
+                        this.showToast('Erro ao atualizar dados.', false);
+                    } finally {
+                        this.loading = false;
+                    }
                 }
             }
         }
