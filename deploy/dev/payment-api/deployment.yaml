@@ -27,7 +27,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
       - name: payment-api
-        image: fcavarzare/projeto-reserva:payment-api-26910e7a605bedef08abe1369ffbbe66150ebc6a
+        image: fcavarzare/projeto-reserva:payment-api-0bed3993a2351665242857d94af8ed71d3b55081
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
