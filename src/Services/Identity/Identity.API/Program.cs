@@ -10,6 +10,11 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
 
 builder.Services.AddControllers();
 
+// 2. Health Checks
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "live" })
+    .AddSqlServer(connectionString!, name: "sqlserver", tags: new[] { "ready" });
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -32,5 +37,13 @@ using (var scope = app.Services.CreateScope())
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
+
+// Endpoints para o Kubernetes
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
+    Predicate = (check) => check.Tags.Contains("live")
+});
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
+    Predicate = (check) => check.Tags.Contains("ready")
+});
 
 app.Run();
