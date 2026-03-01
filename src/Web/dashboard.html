@@ -25,16 +25,13 @@
 
     <!-- Login Moderno -->
     <div x-show="!isLoggedIn" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0f172a]">
-        <div class="glass p-10 rounded-[2.5rem] w-full max-w-md shadow-2xl relative z-10">
-            <div class="text-center mb-10">
-                <div class="inline-block p-4 bg-blue-600/20 rounded-2xl mb-4 text-3xl">🎬</div>
-                <h2 class="text-3xl font-extrabold tracking-tighter text-white uppercase italic">Cinema <span class="text-blue-500">Premium</span></h2>
-            </div>
-            <form @submit.prevent="authMode === 'login' ? login() : register()" class="space-y-5">
+        <div class="glass p-10 rounded-[2.5rem] w-full max-w-md shadow-2xl relative z-10 text-center">
+            <h2 class="text-3xl font-extrabold tracking-tighter text-white uppercase italic">Cinema <span class="text-blue-500">Premium</span></h2>
+            <form @submit.prevent="authMode === 'login' ? login() : register()" class="space-y-5 mt-8">
                 <input type="text" x-model="loginForm.username" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none" placeholder="Usuário">
                 <input type="password" x-model="loginForm.password" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none" placeholder="Senha">
-                <button type="submit" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-xs">Entrar</button>
-                <button type="button" @click="authMode = (authMode === 'login' ? 'register' : 'login')" class="w-full text-xs text-slate-500 py-2">Criar Conta</button>
+                <button type="submit" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase tracking-widest text-xs">Acessar</button>
+                <button type="button" @click="authMode = (authMode === 'login' ? 'register' : 'login')" class="w-full text-xs text-slate-500 py-2">Cadastrar-se</button>
             </form>
         </div>
     </div>
@@ -48,7 +45,6 @@
                     <nav class="hidden md:flex gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                         <a @click="view = 'catalog'; selectedSeats = []" class="hover:text-white cursor-pointer" :class="view === 'catalog' ? 'text-blue-500' : ''">Filmes</a>
                         <a @click="fetchMyReservations()" class="hover:text-white cursor-pointer" :class="view === 'my-reservations' ? 'text-blue-500' : ''">Minhas Reservas</a>
-                        <a @click="view = 'admin'; selectedSeats = []" class="hover:text-white cursor-pointer" :class="view === 'admin' ? 'text-blue-500' : ''">Administração</a>
                     </nav>
                 </div>
                 <div class="flex items-center gap-6 text-[10px] font-bold">
@@ -143,28 +139,6 @@
                 </div>
                 <div x-show="myReservations.length === 0" class="text-center py-20 glass rounded-[3rem] border-dashed border-2 border-slate-700 opacity-50">Você não possui reservas.</div>
             </div>
-
-            <!-- Administração -->
-            <div x-show="view === 'admin'" class="max-w-5xl mx-auto space-y-10">
-                <h2 class="text-4xl font-extrabold tracking-tighter text-white uppercase italic">Gerenciar <span class="text-blue-500">Catálogo</span></h2>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                    <div class="glass p-10 rounded-[3rem] space-y-6">
-                        <div class="space-y-4">
-                            <input type="text" x-model="movieForm.title" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none" placeholder="Título">
-                            <input type="text" x-model="movieForm.posterUrl" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none" placeholder="URL Imagem">
-                            <textarea x-model="movieForm.description" rows="4" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none" placeholder="Sinopse"></textarea>
-                        </div>
-                        <button @click="createMovie()" :disabled="processing" class="w-full bg-blue-600 py-5 rounded-2xl font-bold uppercase">Cadastrar Filme</button>
-                    </div>
-                    <div class="movie-card glass rounded-[2.5rem] overflow-hidden opacity-50" :class="movieForm.title ? 'opacity-100' : ''">
-                        <div class="relative h-[400px] bg-slate-900">
-                            <template x-if="movieForm.posterUrl"><img :src="movieForm.posterUrl" class="w-full h-full object-cover"></template>
-                            <div class="absolute bottom-6 left-6"><h3 class="text-2xl font-black text-white italic uppercase" x-text="movieForm.title || 'Preview'"></h3></div>
-                        </div>
-                        <div class="p-8"><p class="text-slate-400 text-sm" x-text="movieForm.description || 'Descrição...'"></p></div>
-                    </div>
-                </div>
-            </div>
         </main>
 
         <!-- Checkout Bar -->
@@ -206,7 +180,6 @@
                 selectedSession: null,
                 selectedSeats: [],
                 myReservations: [],
-                movieForm: { title: '', posterUrl: '', description: '' },
                 tempSeat: null,
                 loading: false,
                 processing: false,
@@ -218,23 +191,6 @@
                 get totalPrice() { return this.selectedSeats.reduce((sum, s) => sum + s.finalPrice, 0); },
 
                 init() { if (this.isLoggedIn) this.fetchMovies(); },
-
-                async createMovie() {
-                    this.processing = true;
-                    try {
-                        const res = await fetch(this.urls.movies, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
-                            body: JSON.stringify(this.movieForm)
-                        });
-                        if (res.ok) {
-                            this.showToast('Filme cadastrado!', true);
-                            this.movieForm = { title: '', posterUrl: '', description: '' };
-                            await this.fetchMovies();
-                            this.view = 'catalog';
-                        }
-                    } finally { this.processing = false; }
-                },
 
                 async fetchMyReservations() {
                     this.view = 'my-reservations';
@@ -280,16 +236,9 @@
                             method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
                             body: JSON.stringify(payload)
                         });
-                        if (res.ok) {
-                            this.showToast('Reserva confirmada!', true);
-                            this.selectedSeats = [];
-                            await this.fetchSeats();
-                        } else {
-                            const data = await res.json();
-                            this.showToast(data.message || 'Falha na reserva.', false);
-                        }
-                    } catch (e) { this.showToast('Erro de conexão.', false); }
-                    finally { this.processing = false; }
+                        if (res.ok) { this.showToast('Reserva confirmada!', true); this.selectedSeats = []; await this.fetchSeats(); }
+                        else { const data = await res.json(); this.showToast(data.message || 'Falha.', false); }
+                    } finally { this.processing = false; }
                 },
 
                 formatCurrency(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); },
