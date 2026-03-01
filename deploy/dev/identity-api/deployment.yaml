@@ -14,18 +14,18 @@ spec:
       labels:
         app: identity-api
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - identity-api
-              topologyKey: "kubernetes.io/hostname"
+      # affinity:
+      #   podAntiAffinity:
+      #     preferredDuringSchedulingIgnoredDuringExecution:
+      #     - weight: 100
+      #       podAffinityTerm:
+      #         labelSelector:
+      #           matchExpressions:
+      #           - key: app
+      #             operator: In
+      #             values:
+      #             - identity-api
+      #         topologyKey: "kubernetes.io/hostname"
       containers:
       - name: identity-api
         image: fcavarzare/projeto-reserva:identity-api-ee56ff3524ac59e3bad4accc40fe60bcd1701770
