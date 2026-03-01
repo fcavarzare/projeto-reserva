@@ -28,7 +28,7 @@ spec:
       #         topologyKey: "kubernetes.io/hostname"
       containers:
       - name: identity-api
-        image: fcavarzare/projeto-reserva:identity-api-f604ccd12daea00a6abbff8a35f9dd21af57b44d
+        image: fcavarzare/projeto-reserva:identity-api-9ef1b163c1a110e5b5ffe44e78d2f167b0293908
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
