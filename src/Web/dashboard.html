@@ -193,7 +193,11 @@
                 processing: false,
                 toast: { show: false, message: '', success: true },
                 loginForm: { username: '', password: '' },
-                urls: { booking: '/api/reservations', movies: '/api/movies', identity: '/api/auth' },
+                urls: { 
+                    booking: 'http://localhost:5154/api/booking/api/reservations', 
+                    movies: 'http://localhost:5154/api/booking/api/movies', 
+                    identity: 'http://localhost:5154/api/identity/api/auth' 
+                },
 
                 get filteredSessions() { return this.sessions.filter(s => s.location === this.selectedState); },
                 get totalPrice() { return this.selectedSeats.reduce((sum, s) => sum + s.finalPrice, 0); },

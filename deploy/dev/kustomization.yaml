@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - namespace-governance.yaml
   - infrastructure/k8s-infra.yaml
+  - api-gateway-deployment.yaml
   - booking-api/deployment.yaml
   - booking-api/network-policy.yaml
   - payment-api/deployment.yaml

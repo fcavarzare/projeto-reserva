@@ -90,31 +90,24 @@ spec:
             name: web-ui-service
             port:
               number: 80
-      - path: /api/reservations
+      - path: /api/booking
         pathType: Prefix
         backend:
           service:
-            name: booking-api-service
+            name: api-gateway-service
             port:
               number: 80
-      - path: /api/movies
+      - path: /api/identity
         pathType: Prefix
         backend:
           service:
-            name: booking-api-service
+            name: api-gateway-service
             port:
               number: 80
-      - path: /api/auth
+      - path: /api/payment
         pathType: Prefix
         backend:
           service:
-            name: identity-api-service
-            port:
-              number: 80
-      - path: /api/payments
-        pathType: Prefix
-        backend:
-          service:
-            name: payment-api-service
+            name: api-gateway-service
             port:
               number: 80
