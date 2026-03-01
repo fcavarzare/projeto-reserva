@@ -29,8 +29,7 @@ public class ReservationsController : ControllerBase
     [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public async Task<IActionResult> GetShows()
     {
-        var shows = await _context.Shows
-            .ToListAsync();
+        var shows = await _context.Shows.ToListAsync();
         return Ok(shows);
     }
 
@@ -40,7 +39,6 @@ public class ReservationsController : ControllerBase
     {
         var cacheKey = SEATS_CACHE_KEY + sessionId;
         var db = _redis.GetDatabase();
-        
         var cached = await db.StringGetAsync(cacheKey);
         if (cached.HasValue) return Ok(JsonDocument.Parse(cached.ToString()));
 
@@ -64,8 +62,34 @@ public class ReservationsController : ControllerBase
             var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
             await db.StringSetAsync(cacheKey, JsonSerializer.Serialize(seats, jsonOptions), TimeSpan.FromMinutes(5));
         }
-
         return Ok(seats);
+    }
+
+    [HttpGet("my")]
+    public async Task<IActionResult> GetMyReservations()
+    {
+        var userId = User.Identity?.Name;
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var reservations = await _context.Reservations
+            .Where(r => r.UserId == userId)
+            .OrderByDescending(r => r.CreatedAt)
+            .Select(r => new {
+                r.Id,
+                r.Status,
+                r.Price,
+                r.TicketType,
+                r.CreatedAt,
+                Seat = _context.Seats.Where(s => s.Id == r.SeatId).Select(s => new {
+                    s.Row,
+                    s.Number,
+                    ShowDate = _context.Shows.Where(sh => sh.Id == s.ShowId).Select(sh => sh.Date).FirstOrDefault(),
+                    MovieTitle = _context.Movies.Where(m => m.Id == _context.Shows.Where(sh => sh.Id == s.ShowId).Select(sh => sh.MovieId).FirstOrDefault()).Select(m => m.Title).FirstOrDefault()
+                }).FirstOrDefault()
+            })
+            .ToListAsync();
+
+        return Ok(reservations);
     }
 
     [HttpPost("seed")]
@@ -139,15 +163,12 @@ public class ReservationsController : ControllerBase
         try
         {
             var reservationIds = await _mediator.Send(command);
-            
-            // Limpar cache de assentos para a sessão
             var firstSeatId = command.Seats.FirstOrDefault()?.SeatId;
             if (firstSeatId.HasValue)
             {
                 var seat = await _context.Seats.FindAsync(firstSeatId.Value);
                 if (seat != null) await _redis.GetDatabase().KeyDeleteAsync(SEATS_CACHE_KEY + seat.ShowId);
             }
-
             return Ok(new { ids = reservationIds });
         }
         catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
