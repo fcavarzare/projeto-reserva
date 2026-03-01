@@ -6,10 +6,12 @@ namespace Payment.API.Consumers;
 public class ReservationCreatedConsumer : IConsumer<ReservationCreatedEvent>
 {
     private readonly ILogger<ReservationCreatedConsumer> _logger;
+    private readonly IPublishEndpoint _publishEndpoint;
 
-    public ReservationCreatedConsumer(ILogger<ReservationCreatedConsumer> logger)
+    public ReservationCreatedConsumer(ILogger<ReservationCreatedConsumer> logger, IPublishEndpoint publishEndpoint)
     {
         _logger = logger;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task Consume(ConsumeContext<ReservationCreatedEvent> context)
@@ -23,7 +25,12 @@ public class ReservationCreatedConsumer : IConsumer<ReservationCreatedEvent>
 
         _logger.LogInformation("Pagamento da reserva {ReservationId} APROVADO!", message.ReservationId);
 
-        // Aqui, o Payment.API publicaria um novo evento "PaymentApprovedEvent" 
-        // para o Booking.API confirmar a reserva definitivamente.
+        // Publicar o resultado do pagamento para o Booking.API
+        await _publishEndpoint.Publish<PaymentProcessedEvent>(new
+        {
+            ReservationId = message.ReservationId,
+            Success = true,
+            Message = "Pagamento processado com sucesso via RabbitMQ"
+        });
     }
 }
