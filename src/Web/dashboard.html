@@ -3,55 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cinema System - Cinemark Experience</title>
+    <title>Cinema System - Experience</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs" defer></script>
     <style> 
         [x-cloak] { display: none !important; } 
-        .seat { transition: all 0.2s; }
-        .animate-bounce-in { animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
-        @keyframes bounceIn { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } }
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { 0% { transform: translateY(100%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans" x-data="cinemaApp()" x-init="init()">
     
-    <!-- Tela de Autenticação -->
+    <!-- Login (Oculto se logado) -->
     <div x-show="!isLoggedIn" class="min-h-screen flex items-center justify-center p-6 bg-slate-900">
-        <div class="relative bg-slate-800 p-10 rounded-[2.5rem] border border-slate-700 shadow-2xl w-full max-w-md text-center">
-            <h2 class="text-4xl font-black mb-8 text-blue-400 italic tracking-tighter uppercase">Cinema System</h2>
+        <div class="bg-slate-800 p-10 rounded-[2.5rem] border border-slate-700 shadow-2xl w-full max-w-md text-center">
+            <h2 class="text-4xl font-black mb-8 text-blue-400 italic uppercase">Cinema System</h2>
             <form @submit.prevent="authMode === 'login' ? login() : register()" class="space-y-6">
-                <input type="text" x-model="loginForm.username" class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 text-sm" placeholder="Usuário">
-                <input type="password" x-model="loginForm.password" class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 text-sm" placeholder="Senha">
-                <button type="submit" :disabled="loading" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 rounded-2xl shadow-xl transition-all uppercase tracking-widest text-sm">
-                    <span x-show="!loading" x-text="authMode === 'login' ? 'Acessar' : 'Registrar'"></span>
-                    <span x-show="loading">...</span>
-                </button>
+                <input type="text" x-model="loginForm.username" class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:border-blue-500" placeholder="Usuário">
+                <input type="password" x-model="loginForm.password" class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:border-blue-500" placeholder="Senha">
+                <button type="submit" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl">Acessar</button>
             </form>
         </div>
     </div>
 
-    <!-- Aplicação Principal -->
+    <!-- App -->
     <div x-show="isLoggedIn" x-cloak class="flex flex-col min-h-screen">
         <header class="bg-slate-800 border-b border-slate-700 p-6 shadow-xl sticky top-0 z-40">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <h1 @click="view = 'catalog'" class="text-2xl font-black bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent italic cursor-pointer">CINEMARK</h1>
-                <div class="flex items-center gap-6">
-                    <button @click="initSeed()" class="text-[10px] text-slate-500 uppercase border border-slate-700 px-3 py-1.5 rounded-lg hover:text-white font-bold">Atualizar Catálogo</button>
-                    <button @click="logout()" class="text-rose-500 text-xs font-bold underline">Sair</button>
+                <h1 @click="view = 'catalog'; selectedSeats = []" class="text-2xl font-black bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent italic cursor-pointer uppercase">Cinemark</h1>
+                <div class="flex gap-6 items-center text-xs">
+                    <button @click="initSeed()" class="text-slate-500 hover:text-white uppercase font-bold">Atualizar Catálogo</button>
+                    <button @click="logout()" class="text-rose-500 font-bold underline">Sair</button>
                 </div>
             </div>
         </header>
 
-        <main class="flex-grow max-w-7xl mx-auto p-8 w-full">
+        <main class="flex-grow max-w-7xl mx-auto p-8 w-full pb-40">
             
             <!-- Catálogo -->
             <div x-show="view === 'catalog'" class="grid grid-cols-1 md:grid-cols-3 gap-10">
                 <template x-for="movie in movies" :key="movie.id">
-                    <div class="bg-slate-800 rounded-[2.5rem] overflow-hidden border border-slate-700 shadow-2xl hover:border-blue-500/50 transition-all cursor-pointer flex flex-col h-full" @click="selectMovie(movie)">
+                    <div class="bg-slate-800 rounded-[2.5rem] overflow-hidden border border-slate-700 shadow-2xl hover:border-blue-500 transition-all cursor-pointer" @click="selectMovie(movie)">
                         <img :src="movie.posterUrl" class="w-full h-[450px] object-cover opacity-90">
                         <div class="p-8">
                             <h3 class="text-xl font-black mb-3" x-text="movie.title"></h3>
-                            <p class="text-slate-400 text-xs" x-text="movie.description"></p>
+                            <p class="text-slate-400 text-xs line-clamp-2" x-text="movie.description"></p>
                         </div>
                     </div>
                 </template>
@@ -59,99 +55,110 @@
 
             <!-- Sessões -->
             <div x-show="view === 'sessions'" class="max-w-4xl mx-auto">
-                <button @click="view = 'catalog'" class="mb-8 text-blue-400 text-sm font-bold flex items-center gap-2">← Catálogo</button>
+                <button @click="view = 'catalog'" class="mb-8 text-blue-400 text-sm font-bold">← Catálogo</button>
                 <h2 class="text-4xl font-black mb-6" x-text="selectedMovie?.title"></h2>
-                <div class="flex gap-4 mb-8 p-1 bg-slate-800 rounded-2xl w-fit border border-slate-700">
+                <div class="flex gap-4 mb-12">
                     <template x-for="state in ['SP', 'RJ', 'MG']">
-                        <button @click="selectedState = state" :class="selectedState === state ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400'" class="px-8 py-3 rounded-xl text-xs font-black transition-all" x-text="state"></button>
+                        <button @click="selectedState = state" :class="selectedState === state ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 border border-slate-700'" class="px-8 py-3 rounded-xl text-xs font-black transition-all" x-text="state"></button>
                     </template>
                 </div>
                 <div class="grid gap-4">
                     <template x-for="session in filteredSessions" :key="session.id">
-                        <div @click="selectSession(session)" class="bg-slate-800 p-8 rounded-3xl border border-slate-700 flex justify-between items-center hover:bg-slate-700 cursor-pointer transition-all">
+                        <div @click="selectSession(session)" class="bg-slate-800 p-8 rounded-3xl border border-slate-700 flex justify-between items-center hover:bg-slate-700 cursor-pointer">
                             <div>
                                 <p class="text-xs text-slate-500 font-bold uppercase mb-2" x-text="session.theaterName"></p>
                                 <p class="text-3xl font-black text-emerald-400" x-text="formatDate(session.date)"></p>
                             </div>
-                            <span class="bg-emerald-500/10 text-emerald-400 px-5 py-2 rounded-xl text-xs font-black border border-emerald-500/20">ESCOLHER ASSENTO</span>
+                            <span class="bg-emerald-500/10 text-emerald-400 px-6 py-2 rounded-xl text-xs font-black border border-emerald-500/20 uppercase">Escolher Assentos</span>
                         </div>
                     </template>
                 </div>
             </div>
 
-            <!-- Mapa de Assentos (Cinemark) -->
+            <!-- Assentos -->
             <div x-show="view === 'seats'" class="max-w-5xl mx-auto">
-                <button @click="view = 'sessions'" class="mb-8 text-blue-400 text-sm font-bold flex items-center gap-2">← Horários</button>
-                <div class="bg-slate-800 p-12 rounded-[3.5rem] border border-slate-700 shadow-2xl relative overflow-hidden">
+                <button @click="view = 'sessions'; selectedSeats = []" class="mb-8 text-blue-400 text-sm font-bold">← Horários</button>
+                
+                <div class="bg-slate-800 p-12 rounded-[3.5rem] border border-slate-700 shadow-2xl relative">
                     
-                    <!-- Seleção de Ingresso -->
-                    <div x-show="selectingTicket" class="absolute inset-0 bg-slate-900/95 z-50 rounded-[3.5rem] flex flex-col items-center justify-center p-10 text-center" x-transition>
-                        <h3 class="text-3xl font-black mb-2 uppercase italic tracking-tighter text-blue-400">Tipo de Ingresso</h3>
-                        <p class="text-slate-400 mb-10">Confirme o valor para a poltrona <span class="text-white font-black" x-text="selectedSeat?.row + selectedSeat?.number"></span></p>
-                        <div class="flex flex-col md:flex-row gap-8 w-full max-w-4xl items-stretch">
-                            <div class="grid grid-cols-1 gap-4 flex-grow">
-                                <button @click="ticketType = 'INTEIRA'; finalPrice = selectedSeat.price" :class="ticketType === 'INTEIRA' ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700 bg-slate-800'" class="p-6 border-2 rounded-3xl transition-all text-left">
-                                    <div class="flex justify-between items-center"><span class="text-xl font-black">INTEIRA</span><span class="text-emerald-400 font-black" x-text="formatCurrency(selectedSeat?.price)"></span></div>
-                                </button>
-                                <button @click="ticketType = 'MEIA'; finalPrice = selectedSeat.price / 2" :class="ticketType === 'MEIA' ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700 bg-slate-800'" class="p-6 border-2 rounded-3xl transition-all text-left">
-                                    <div class="flex justify-between items-center"><span class="text-xl font-black">MEIA</span><span class="text-emerald-400 font-black" x-text="formatCurrency(selectedSeat?.price / 2)"></span></div>
-                                </button>
-                            </div>
-                            <div class="w-full md:w-80 bg-slate-800 border border-slate-700 rounded-3xl p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden text-left">
-                                <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
-                                <div class="space-y-4">
-                                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Resumo</p>
-                                    <div class="flex justify-between text-xs"><span class="text-slate-400">Tipo:</span><span class="font-bold uppercase" x-text="ticketType"></span></div>
-                                    <div class="flex justify-between text-xs"><span class="text-slate-400">Assento:</span><span class="font-bold uppercase" x-text="selectedSeat?.row + selectedSeat?.number"></span></div>
-                                    <div class="pt-4 border-t border-slate-700">
-                                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total</p>
-                                        <p class="text-4xl font-black text-blue-400 tracking-tighter" x-text="formatCurrency(finalPrice)"></p>
-                                    </div>
-                                </div>
-                                <button @click="selectingTicket = false" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl shadow-lg transition-all uppercase text-xs tracking-widest mt-6">Confirmar</button>
-                            </div>
+                    <!-- Modal Tipo Ingresso -->
+                    <div x-show="tempSeat" class="absolute inset-0 bg-slate-900/95 z-50 rounded-[3.5rem] flex flex-col items-center justify-center p-10 text-center" x-transition>
+                        <h3 class="text-2xl font-black mb-2 uppercase text-blue-400 italic">Como você vai assistir?</h3>
+                        <p class="text-slate-400 mb-10">Selecione o tipo de entrada para <span class="text-white font-black" x-text="tempSeat?.row + tempSeat?.number"></span></p>
+                        
+                        <div class="flex flex-col md:flex-row gap-6 w-full max-w-2xl">
+                            <button @click="addSelectedSeat('INTEIRA')" class="flex-1 p-8 bg-slate-800 border-2 border-slate-700 rounded-3xl hover:border-emerald-500 text-left">
+                                <div class="flex justify-between items-center mb-1"><span class="text-lg font-black uppercase">Inteira</span><span class="text-emerald-400 font-black" x-text="formatCurrency(tempSeat?.price)"></span></div>
+                                <p class="text-[10px] text-slate-500 uppercase font-bold">Acesso padrão</p>
+                            </button>
+                            <button @click="addSelectedSeat('MEIA')" class="flex-1 p-8 bg-slate-800 border-2 border-slate-700 rounded-3xl hover:border-emerald-500 text-left">
+                                <div class="flex justify-between items-center mb-1"><span class="text-lg font-black uppercase">Meia Entrada</span><span class="text-emerald-400 font-black" x-text="formatCurrency(tempSeat?.price / 2)"></span></div>
+                                <p class="text-[10px] text-slate-500 uppercase font-bold">Estudantes e Idosos</p>
+                            </button>
                         </div>
-                        <button @click="selectedSeat = null; selectingTicket = false" class="mt-10 text-slate-500 hover:text-white font-bold uppercase tracking-widest text-[10px]">Desistir</button>
+                        <button @click="tempSeat = null" class="mt-10 text-slate-500 font-bold uppercase text-[10px] tracking-widest underline">Cancelar</button>
                     </div>
 
-                    <!-- Rodapé de Confirmação -->
-                    <div x-show="selectedSeat && !selectingTicket" class="absolute bottom-0 left-0 w-full bg-blue-600 p-6 flex justify-between items-center animate-bounce-in" x-transition>
-                        <div><p class="text-2xl font-black"><span x-text="selectedSeat.row + selectedSeat.number"></span> - <span x-text="ticketType"></span></p></div>
-                        <div class="flex items-center gap-8">
-                            <div class="text-right"><p class="text-[10px] font-black uppercase opacity-70">Total</p><p class="text-2xl font-black" x-text="formatCurrency(finalPrice)"></p></div>
-                            <button @click="confirmBooking()" :disabled="processing" class="bg-white text-blue-600 px-10 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-50 transition-all">FINALIZAR</button>
-                        </div>
-                    </div>
-
-                    <div class="text-center mb-16">
-                        <div class="inline-block px-24 py-3 bg-slate-900 text-slate-600 rounded-b-[2rem] border-x border-b border-slate-700 text-[10px] font-black tracking-[1em]">TELA</div>
+                    <div class="text-center mb-16 opacity-30 select-none">
+                        <div class="inline-block px-24 py-3 bg-slate-900 rounded-b-[2rem] border-x border-b border-slate-700 text-[10px] font-black tracking-[1em]">TELA</div>
                     </div>
 
                     <div class="grid grid-cols-10 gap-4 justify-items-center mb-16">
                         <template x-for="seat in seats" :key="seat.id">
-                            <button @click="selectSeat(seat)" :disabled="seat.isReserved" :class="getSeatClass(seat)" class="w-11 h-11 rounded-xl flex flex-col items-center justify-center transition-all border-b-4 relative">
+                            <button @click="handleSeatClick(seat)" :disabled="seat.isReserved" :class="getSeatClass(seat)" class="w-11 h-11 rounded-xl flex flex-col items-center justify-center transition-all border-b-4 relative">
                                 <span x-show="seat.type === 'Wheelchair'" class="text-[14px] mb-[-4px]">♿</span>
                                 <span class="text-[10px] font-black" x-text="seat.row + seat.number"></span>
                             </button>
                         </template>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-[9px] font-black text-slate-500 uppercase border-t border-slate-700/50 pt-10">
-                        <div class="flex items-center gap-3"><div class="w-4 h-4 bg-emerald-600 rounded-md"></div> Disponível</div>
-                        <div class="flex items-center gap-3"><div class="w-4 h-4 bg-blue-500 rounded-md"></div> Cadeirante</div>
-                        <div class="flex items-center gap-3"><div class="w-4 h-4 bg-blue-300 rounded-md"></div> Acompanhante</div>
-                        <div class="flex items-center gap-3"><div class="w-4 h-4 bg-slate-700 rounded-md opacity-50"></div> Ocupado</div>
+                    <div class="flex justify-center gap-8 text-[9px] font-black text-slate-500 uppercase border-t border-slate-700/50 pt-10">
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 bg-emerald-600 rounded-sm"></div> Livre</div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 bg-blue-600 rounded-sm"></div> Selecionado</div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 bg-blue-500 rounded-sm"></div> ♿</div>
+                        <div class="flex items-center gap-2"><div class="w-3 h-3 bg-slate-700 rounded-sm opacity-50"></div> Ocupado</div>
                     </div>
                 </div>
             </div>
         </main>
+
+        <!-- Rodapé Inteligente (Totalizador) -->
+        <div x-show="selectedSeats.length > 0" class="fixed bottom-0 left-0 w-full bg-blue-600 border-t border-blue-400 p-6 z-[100] shadow-[0_-20px_50px_rgba(0,0,0,0.5)] animate-slide-up" x-transition>
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex gap-4 items-center">
+                    <div class="bg-blue-700 p-4 rounded-2xl">
+                        <span class="text-3xl font-black" x-text="selectedSeats.length"></span>
+                        <span class="text-[10px] font-bold uppercase block opacity-70">Assentos</span>
+                    </div>
+                    <div class="overflow-x-auto flex gap-2 max-w-[300px] md:max-w-md no-scrollbar">
+                        <template x-for="s in selectedSeats" :key="s.id">
+                            <div class="bg-white/10 px-4 py-2 rounded-xl border border-white/20 whitespace-nowrap">
+                                <p class="text-[10px] font-black leading-none" x-text="s.row + s.number"></p>
+                                <p class="text-[8px] font-bold uppercase opacity-70" x-text="s.ticketType"></p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-10">
+                    <div class="text-right">
+                        <p class="text-[10px] font-black uppercase opacity-70 tracking-widest">Total do Pedido</p>
+                        <p class="text-4xl font-black tracking-tighter" x-text="formatCurrency(totalPrice)"></p>
+                    </div>
+                    <button @click="confirmBooking()" :disabled="processing" class="bg-white text-blue-600 px-12 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-50 transition-all shadow-2xl border-b-4 border-slate-200 active:border-b-0 active:translate-y-1">
+                        <span x-show="!processing">Finalizar Compra</span>
+                        <span x-show="processing" class="animate-pulse">Reservando...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Feedback Toasts -->
-    <div x-show="toast.show" x-transition class="fixed bottom-10 left-1/2 -translate-x-1/2 p-5 rounded-2xl shadow-2xl border bg-slate-800 flex items-center gap-4 min-w-[350px] z-[100]" :class="toast.success ? 'border-emerald-500/50 text-emerald-400' : 'border-rose-500/50 text-rose-400'">
+    <!-- Toast -->
+    <div x-show="toast.show" x-transition class="fixed bottom-10 left-1/2 -translate-x-1/2 p-5 rounded-2xl shadow-2xl border bg-slate-800 flex items-center gap-4 z-[200] min-w-[300px]" :class="toast.success ? 'border-emerald-500/50 text-emerald-400' : 'border-rose-500/50 text-rose-400'">
         <div class="text-2xl" x-text="toast.success ? '✅' : '❌'"></div>
         <div>
-            <p class="text-xs font-black uppercase tracking-widest mb-0.5" x-text="toast.success ? 'Sucesso!' : 'Falha'"></p>
+            <p class="text-xs font-black uppercase" x-text="toast.success ? 'Sucesso' : 'Erro'"></p>
             <p class="text-sm font-medium text-slate-300" x-text="toast.message"></p>
         </div>
     </div>
@@ -170,10 +177,8 @@
                 seats: [],
                 selectedMovie: null,
                 selectedSession: null,
-                selectedSeat: null,
-                selectingTicket: false,
-                ticketType: 'INTEIRA',
-                finalPrice: 0,
+                selectedSeats: [], // Array de assentos selecionados
+                tempSeat: null,    // Assento aguardando escolha de tipo de ingresso
                 loading: false,
                 processing: false,
                 toast: { show: false, message: '', success: true },
@@ -181,72 +186,109 @@
                 urls: { booking: '/api/reservations', movies: '/api/movies', identity: '/api/auth' },
 
                 get filteredSessions() { return this.sessions.filter(s => s.location === this.selectedState); },
+                get totalPrice() { return this.selectedSeats.reduce((sum, s) => sum + s.finalPrice, 0); },
+
                 init() { if (this.isLoggedIn) this.fetchMovies(); },
-                selectSeat(seat) {
-                    this.selectedSeat = seat;
-                    this.selectingTicket = true;
-                    this.ticketType = 'INTEIRA';
-                    this.finalPrice = seat.price;
+
+                handleSeatClick(seat) {
+                    const index = this.selectedSeats.findIndex(s => s.id === seat.id);
+                    if (index > -1) {
+                        this.selectedSeats.splice(index, 1);
+                    } else {
+                        if (this.selectedSeats.length >= 8) {
+                            this.showToast('Limite de 8 assentos por compra.', false);
+                            return;
+                        }
+                        this.tempSeat = seat;
+                    }
                 },
+
+                addSelectedSeat(type) {
+                    const price = type === 'INTEIRA' ? this.tempSeat.price : this.tempSeat.price / 2;
+                    this.selectedSeats.push({
+                        ...this.tempSeat,
+                        ticketType: type,
+                        finalPrice: price
+                    });
+                    this.tempSeat = null;
+                },
+
                 getSeatClass(seat) {
                     if (seat.isReserved) return 'bg-slate-700 text-slate-500 border-transparent opacity-50';
-                    if (this.selectedSeat?.id === seat.id) return 'bg-blue-600 text-white border-blue-400 shadow-lg scale-110 z-10';
+                    if (this.selectedSeats.some(s => s.id === seat.id)) return 'bg-blue-600 text-white border-blue-400 shadow-lg scale-110 z-10';
                     switch(seat.type) {
                         case 'Wheelchair': return 'bg-blue-500 hover:bg-blue-400 text-white border-blue-300';
                         case 'Companion': return 'bg-blue-300 hover:bg-blue-200 text-blue-900 border-blue-100';
                         default: return 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400';
                     }
                 },
-                formatCurrency(value) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0); },
+
+                async confirmBooking() {
+                    this.processing = true;
+                    try {
+                        const payload = {
+                            seats: this.selectedSeats.map(s => ({ 
+                                seatId: s.id, 
+                                price: s.finalPrice, 
+                                ticketType: s.ticketType 
+                            })),
+                            userId: this.userName
+                        };
+                        const res = await fetch(this.urls.booking, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
+                            body: JSON.stringify(payload)
+                        });
+                        if (res.ok) {
+                            this.showToast(`Reserva de ${this.selectedSeats.length} assentos concluída!`, true);
+                            this.selectedSeats = [];
+                            await this.fetchSeats();
+                        } else {
+                            const data = await res.json();
+                            this.showToast(data.message || 'Falha na reserva.', false);
+                        }
+                    } catch (e) { this.showToast('Erro de conexão.', false); }
+                    finally { this.processing = false; }
+                },
+
+                formatCurrency(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); },
+                formatDate(d) { return new Date(d).getHours() + ':' + new Date(d).getMinutes().toString().padStart(2, '0'); },
+                showToast(m, s) { this.toast = { show: true, message: m, success: s }; setTimeout(() => this.toast.show = false, 4000); },
+                
                 async login() {
                     this.loading = true;
                     try {
                         const res = await fetch(`${this.urls.identity}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.loginForm) });
                         if (res.ok) { const data = await res.json(); localStorage.setItem('token', data.token); localStorage.setItem('user', data.user); location.reload(); }
+                        else { this.showToast('Credenciais inválidas.', false); }
                     } finally { this.loading = false; }
                 },
-                async logout() { localStorage.clear(); location.reload(); },
-                async fetchMovies() {
+                async register() {
+                    this.loading = true;
                     try {
-                        const res = await fetch(this.urls.movies, { headers: { 'Authorization': `Bearer ${this.token}` } });
-                        if (res.ok) this.movies = await res.json();
-                    } catch (e) {}
+                        const res = await fetch(`${this.urls.identity}/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.loginForm) });
+                        if (res.ok) { this.showToast('Sucesso! Faça login.', true); this.authMode = 'login'; }
+                    } finally { this.loading = false; }
+                },
+                logout() { localStorage.clear(); location.reload(); },
+                async fetchMovies() {
+                    const res = await fetch(this.urls.movies, { headers: { 'Authorization': `Bearer ${this.token}` } });
+                    if (res.ok) this.movies = await res.json();
                 },
                 async selectMovie(movie) {
                     this.selectedMovie = movie;
-                    try {
-                        const res = await fetch(`${this.urls.movies}/${movie.id}/sessions`, { headers: { 'Authorization': `Bearer ${this.token}` } });
-                        if (res.ok) { this.sessions = await res.json(); this.view = 'sessions'; }
-                    } catch (e) {}
+                    const res = await fetch(`${this.urls.movies}/${movie.id}/sessions`, { headers: { 'Authorization': `Bearer ${this.token}` } });
+                    if (res.ok) { this.sessions = await res.json(); this.view = 'sessions'; }
                 },
                 async selectSession(session) { this.selectedSession = session; await this.fetchSeats(); this.view = 'seats'; },
                 async fetchSeats() {
-                    try {
-                        const res = await fetch(`${this.urls.booking}/seats/${this.selectedSession.id}`, { headers: { 'Authorization': `Bearer ${this.token}` } });
-                        if (res.ok) this.seats = await res.json();
-                    } catch (e) {}
-                },
-                async confirmBooking() {
-                    this.processing = true;
-                    try {
-                        const res = await fetch(this.urls.booking, {
-                            method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
-                            body: JSON.stringify({ seatId: this.selectedSeat.id, userId: this.userName, price: this.finalPrice, ticketType: this.ticketType })
-                        });
-                        if (res.ok) { this.showToast('Reserva confirmada!', true); this.selectedSeat = null; await this.fetchSeats(); }
-                        else { const data = await res.json(); this.showToast(data.message || 'Falha.', false); }
-                    } catch (e) { this.showToast('Erro de conexão.', false); }
-                    finally { this.processing = false; }
+                    const res = await fetch(`${this.urls.booking}/seats/${this.selectedSession.id}`, { headers: { 'Authorization': `Bearer ${this.token}` } });
+                    if (res.ok) this.seats = await res.json();
                 },
                 async initSeed() {
-                    try {
-                        await fetch(`${this.urls.booking}/seed`, { method: 'POST', headers: { 'Authorization': `Bearer ${this.token}` } });
-                        this.showToast('Catálogo pronto!', true);
-                        location.reload();
-                    } catch (e) {}
-                },
-                formatDate(dateStr) { const d = new Date(dateStr); return d.getHours() + ':' + d.getMinutes().toString().padStart(2, '0'); },
-                showToast(message, success) { this.toast = { show: true, message, success }; setTimeout(() => this.toast.show = false, 4000); }
+                    await fetch(`${this.urls.booking}/seed`, { method: 'POST', headers: { 'Authorization': `Bearer ${this.token}` } });
+                    this.showToast('Catálogo pronto!', true);
+                    location.reload();
+                }
             }
         }
     </script>

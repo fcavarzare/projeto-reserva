@@ -138,10 +138,17 @@ public class ReservationsController : ControllerBase
     {
         try
         {
-            var reservationId = await _mediator.Send(command);
-            var seat = await _context.Seats.FindAsync(command.SeatId);
-            if (seat != null) await _redis.GetDatabase().KeyDeleteAsync(SEATS_CACHE_KEY + seat.ShowId);
-            return Ok(new { id = reservationId });
+            var reservationIds = await _mediator.Send(command);
+            
+            // Limpar cache de assentos para a sessão
+            var firstSeatId = command.Seats.FirstOrDefault()?.SeatId;
+            if (firstSeatId.HasValue)
+            {
+                var seat = await _context.Seats.FindAsync(firstSeatId.Value);
+                if (seat != null) await _redis.GetDatabase().KeyDeleteAsync(SEATS_CACHE_KEY + seat.ShowId);
+            }
+
+            return Ok(new { ids = reservationIds });
         }
         catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
     }

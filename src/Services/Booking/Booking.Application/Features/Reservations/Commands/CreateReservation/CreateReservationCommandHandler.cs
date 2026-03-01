@@ -7,7 +7,7 @@ using MassTransit;
 
 namespace Booking.Application.Features.Reservations.Commands.CreateReservation;
 
-public class CreateReservationCommandHandler : IRequestHandler<CreateReservationCommand, Guid>
+public class CreateReservationCommandHandler : IRequestHandler<CreateReservationCommand, List<Guid>>
 {
     private readonly IReservationRepository _reservationRepository;
     private readonly ISeatRepository _seatRepository;
@@ -26,36 +26,55 @@ public class CreateReservationCommandHandler : IRequestHandler<CreateReservation
         _publishEndpoint = publishEndpoint;
     }
 
-    public async Task<Guid> Handle(CreateReservationCommand request, CancellationToken cancellationToken)
+    public async Task<List<Guid>> Handle(CreateReservationCommand request, CancellationToken cancellationToken)
     {
-        string lockKey = $"lock:seat:{request.SeatId}";
-        string lockValue = Guid.NewGuid().ToString();
-        
-        bool lockAcquired = await _lockService.AcquireLockAsync(lockKey, lockValue, TimeSpan.FromSeconds(10));
-        if (!lockAcquired) throw new Exception("Assento em disputa por outro usuario.");
+        var reservationIds = new List<Guid>();
+        var locks = new List<(string key, string value)>();
 
         try
         {
-            var seat = await _seatRepository.GetByIdAsync(request.SeatId);
-            if (seat == null || seat.IsReserved) throw new Exception("Assento indisponivel.");
+            // 1. Tentar adquirir lock para todos os assentos
+            foreach (var seatReq in request.Seats)
+            {
+                string lockKey = $"lock:seat:{seatReq.SeatId}";
+                string lockValue = Guid.NewGuid().ToString();
+                bool lockAcquired = await _lockService.AcquireLockAsync(lockKey, lockValue, TimeSpan.FromSeconds(15));
+                
+                if (!lockAcquired) throw new Exception($"Assento {seatReq.SeatId} está sendo reservado por outro usuário.");
+                locks.Add((lockKey, lockValue));
+            }
 
-            seat.Reserve();
-            var reservation = new Reservation(request.SeatId, request.UserId, request.Price, request.TicketType, TimeSpan.FromMinutes(10));
-            
-            await _seatRepository.UpdateAsync(seat);
-            await _reservationRepository.AddAsync(reservation);
+            // 2. Validar disponibilidade e criar reservas
+            foreach (var seatReq in request.Seats)
+            {
+                var seat = await _seatRepository.GetByIdAsync(seatReq.SeatId);
+                if (seat == null || seat.IsReserved) throw new Exception("Um ou mais assentos selecionados ficaram indisponíveis.");
 
-            await _publishEndpoint.Publish<ReservationCreatedEvent>(new {
-                ReservationId = reservation.Id,
-                Amount = request.Price,
-                UserId = request.UserId
-            });
+                seat.Reserve();
+                var reservation = new Reservation(seatReq.SeatId, request.UserId, seatReq.Price, seatReq.TicketType, TimeSpan.FromMinutes(10));
+                
+                await _seatRepository.UpdateAsync(seat);
+                await _reservationRepository.AddAsync(reservation);
+                reservationIds.Add(reservation.Id);
 
-            return reservation.Id;
+                // 3. Notificar pagamento para cada assento (ou total)
+                await _publishEndpoint.Publish<ReservationCreatedEvent>(new {
+                    ReservationId = reservation.Id,
+                    Amount = seatReq.Price,
+                    UserId = request.UserId
+                });
+            }
+
+            return reservationIds;
+        }
+        catch
+        {
+            // Opcional: Implementar compensação (rollback manual) aqui se necessário
+            throw;
         }
         finally
         {
-            await _lockService.ReleaseLockAsync(lockKey, lockValue);
+            foreach (var l in locks) await _lockService.ReleaseLockAsync(l.key, l.value);
         }
     }
 }
