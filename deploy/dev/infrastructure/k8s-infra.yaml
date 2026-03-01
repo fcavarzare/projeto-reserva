@@ -89,14 +89,11 @@ spec:
         volumeMounts:
         - name: rabbitmq-data
           mountPath: /var/lib/rabbitmq
-  volumeClaimTemplates:
-  - metadata:
-      name: rabbitmq-data
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 2Gi
+        volumes:
+        - name: rabbitmq-data
+        hostPath:
+          path: /mnt/data/rabbitmq
+          type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
