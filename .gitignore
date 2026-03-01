@@ -1,0 +1,45 @@
+# .gitignore para .NET / Visual Studio / VS Code / Kubernetes
+
+## Build and Binary Output
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+dist/
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Visual Studio cache and temporary files
+.vs/
+.vscode/
+*.cache
+*.temp
+*.tmp
+*.log
+
+## Database and Entity Framework
+*.mdf
+*.ldf
+*.sdf
+Migrations/
+
+## Environment secrets (MUITO IMPORTANTE)
+.env
+.env.*
+secrets.json
+*.pfx
+*.pem
+
+## Kubernetes / Docker related
+.docker/
+*.kubeconfig
+*.kube/
+
+## Operating System files
+Thumbs.db
+.DS_Store
+desktop.ini
