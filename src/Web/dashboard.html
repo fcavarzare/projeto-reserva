@@ -267,7 +267,12 @@
                     try {
                         const res = await fetch(`${this.urls.identity}/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.loginForm) });
                         if (res.ok) { this.showToast('Conta criada!', true); this.authMode = 'login'; }
-                    } finally { this.loading = false; }
+                        else { 
+                            const data = await res.json();
+                            this.showToast(data.message || 'Erro ao cadastrar.', false); 
+                        }
+                    } catch (e) { this.showToast('Erro de conexão.', false); }
+                    finally { this.loading = false; }
                 },
                 logout() { localStorage.clear(); location.reload(); },
                 async fetchMovies() {
