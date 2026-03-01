@@ -29,7 +29,39 @@ public class MoviesController : ControllerBase
         var movie = new Booking.Domain.Entities.Movie(request.Title, request.PosterUrl, request.Description);
         _context.Movies.Add(movie);
         await _context.SaveChangesAsync();
-        return Ok(movie);
+
+        var theaters = await _context.Theaters.ToListAsync();
+        var hours = new[] { 14, 18, 21 };
+        var newShows = new List<Booking.Domain.Entities.Show>();
+        foreach (var theater in theaters)
+        {
+            foreach (var hour in hours)
+            {
+                newShows.Add(new Booking.Domain.Entities.Show(movie.Id, theater.Id, DateTime.Today.AddHours(hour)));
+            }
+        }
+        await _context.Shows.AddRangeAsync(newShows);
+        await _context.SaveChangesAsync();
+
+        var allSeats = new List<Booking.Domain.Entities.Seat>();
+        var rows = new[] { "A", "B", "C", "D", "E", "F", "G", "H" };
+        foreach (var show in newShows)
+        {
+            var theater = theaters.First(t => t.Id == show.TheaterId);
+            for (int r = 0; r < theater.Rows; r++)
+            {
+                for (int n = 1; n <= theater.SeatsPerRow; n++)
+                {
+                    var type = Booking.Domain.Entities.SeatType.Normal;
+                    if (r == 0 && (n == 1 || n == theater.SeatsPerRow)) type = Booking.Domain.Entities.SeatType.Wheelchair;
+                    allSeats.Add(new Booking.Domain.Entities.Seat(show.Id, rows[r], n, type));
+                }
+            }
+        }
+        await _context.Seats.AddRangeAsync(allSeats);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Filme e sessões criados!", movie });
     }
 
     public record MovieRequest(string Title, string PosterUrl, string Description);
