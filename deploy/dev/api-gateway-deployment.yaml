@@ -15,9 +15,16 @@ spec:
     spec:
       containers:
       - name: api-gateway
-        image: fcavarzare/projeto-reserva:api-gateway-latest # Você precisará buildar/dar push desta imagem
+        image: fcavarzare/projeto-reserva:api-gateway-latest
         ports:
         - containerPort: 80
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
         env:
         - name: ASPNETCORE_URLS
           value: "http://+:80"
