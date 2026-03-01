@@ -214,6 +214,10 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "AspNetCore.HealthChecks.Rabbitmq": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
             "MassTransit": {
               "target": "Package",
               "version": "[8.2.5, )"
