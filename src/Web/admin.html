@@ -1,0 +1,139 @@
+<!-- Trigger Build - Cinema Premium -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Cinema Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        [x-cloak] { display: none !important; }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .movie-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen" x-data="adminApp()" x-init="init()">
+
+    <!-- Login Admin -->
+    <div x-show="!isLoggedIn" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0f172a]">
+        <div class="glass p-10 rounded-[2.5rem] w-full max-w-md shadow-2xl relative z-10 text-center">
+            <div class="inline-block p-4 bg-amber-500/20 rounded-2xl mb-4 text-3xl">🔐</div>
+            <h2 class="text-3xl font-extrabold tracking-tighter text-white uppercase italic">Painel <span class="text-amber-500">Admin</span></h2>
+            <form @submit.prevent="login()" class="space-y-5 mt-8">
+                <input type="text" x-model="loginForm.username" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none" placeholder="Usuário Admin">
+                <input type="password" x-model="loginForm.password" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none" placeholder="Senha">
+                <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-5 rounded-2xl shadow-xl transition-all uppercase tracking-widest text-xs">Acessar Painel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Admin -->
+    <div x-show="isLoggedIn" x-cloak class="flex flex-col min-h-screen">
+        <header class="glass sticky top-0 z-40 border-b border-white/5 px-6 py-4">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <h1 class="text-xl font-black italic tracking-tighter uppercase">BACKOFFICE <span class="text-amber-500">CINEMA</span></h1>
+                <div class="flex items-center gap-6">
+                    <a href="/" class="text-[10px] font-bold text-slate-400 hover:text-white uppercase tracking-widest">Ir para o Site Principal</a>
+                    <button @click="logout()" class="text-rose-500 text-xs font-bold underline">Sair</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow max-w-7xl mx-auto p-10 w-full space-y-12">
+            <div>
+                <h2 class="text-4xl font-extrabold tracking-tighter text-white uppercase italic">Gerenciar <span class="text-blue-500">Catálogo</span></h2>
+                <p class="text-slate-500 font-medium">Adicione novos filmes e gere sessões automáticas.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <!-- Formulário -->
+                <div class="glass p-10 rounded-[3rem] space-y-6">
+                    <div class="space-y-4">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Título</label>
+                            <input type="text" x-model="movieForm.title" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Ex: Batman">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Pôster (URL)</label>
+                            <input type="text" x-model="movieForm.posterUrl" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="https://...">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Sinopse</label>
+                            <textarea x-model="movieForm.description" rows="4" class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-blue-500/50" placeholder="Descrição curta..."></textarea>
+                        </div>
+                    </div>
+                    <button @click="createMovie()" :disabled="processing" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-5 rounded-2xl shadow-xl uppercase tracking-widest text-xs">
+                        <span x-show="!processing">Publicar Filme e Gerar Sessões</span>
+                        <span x-show="processing">Processando...</span>
+                    </button>
+                </div>
+
+                <!-- Preview -->
+                <div class="space-y-4">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase ml-2">Visualização no App</p>
+                    <div class="movie-card glass rounded-[2.5rem] overflow-hidden opacity-50" :class="movieForm.title ? 'opacity-100' : ''">
+                        <div class="relative h-[400px] bg-slate-900">
+                            <template x-if="movieForm.posterUrl"><img :src="movieForm.posterUrl" class="w-full h-full object-cover"></template>
+                            <div class="absolute bottom-6 left-6 right-6">
+                                <h3 class="text-2xl font-extrabold text-white leading-tight uppercase italic" x-text="movieForm.title || 'Preview'"></h3>
+                            </div>
+                        </div>
+                        <div class="p-8"><p class="text-slate-400 text-sm line-clamp-3" x-text="movieForm.description || 'A sinopse aparecerá aqui...'"></p></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div x-show="toast.show" x-transition class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] w-full max-w-md">
+        <div class="glass p-5 rounded-3xl shadow-2xl flex items-center gap-4 mx-4" :class="toast.success ? 'border-emerald-500/30' : 'border-rose-500/30'">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl bg-slate-900/50" x-text="toast.success ? '✓' : '✕'"></div>
+            <p class="text-sm font-medium text-slate-300" x-text="toast.message"></p>
+        </div>
+    </div>
+
+    <script>
+        function adminApp() {
+            return {
+                isLoggedIn: !!localStorage.getItem('token'),
+                token: localStorage.getItem('token'),
+                loginForm: { username: '', password: '' },
+                movieForm: { title: '', posterUrl: '', description: '' },
+                processing: false,
+                toast: { show: false, message: '', success: true },
+                urls: { movies: '/api/movies', identity: '/api/auth' },
+
+                init() { if (!this.isLoggedIn) { } },
+
+                async login() {
+                    try {
+                        const res = await fetch(`${this.urls.identity}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.loginForm) });
+                        if (res.ok) { const data = await res.json(); localStorage.setItem('token', data.token); location.reload(); }
+                        else { this.showToast('Acesso negado.', false); }
+                    } catch (e) { this.showToast('Servidor offline.', false); }
+                },
+
+                async createMovie() {
+                    this.processing = true;
+                    try {
+                        const res = await fetch(this.urls.movies, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
+                            body: JSON.stringify(this.movieForm)
+                        });
+                        if (res.ok) { this.showToast('Filme e sessões publicados!', true); this.movieForm = { title: '', posterUrl: '', description: '' }; }
+                        else { this.showToast('Erro ao publicar.', false); }
+                    } catch (e) { this.showToast('Erro de conexão.', false); }
+                    finally { this.processing = false; }
+                },
+
+                logout() { localStorage.clear(); location.reload(); },
+                showToast(m, s) { this.toast = { show: true, message: m, success: s }; setTimeout(() => this.toast.show = false, 4000); }
+            }
+        }
+    </script>
+</body>
+</html>
