@@ -10,8 +10,8 @@ metadata:
   namespace: dev
 spec:
   hard:
-    requests.cpu: "4000m"
-    requests.memory: "10Gi"
-    limits.cpu: "8000m"
-    limits.memory: "16Gi"
-    pods: "50"
+    requests.cpu: "8000m"
+    requests.memory: "20Gi"
+    limits.cpu: "16000m"
+    limits.memory: "32Gi"
+    pods: "100"
