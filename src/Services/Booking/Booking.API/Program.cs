@@ -109,9 +109,12 @@ public class GatewayAuthHandler : AuthenticationHandler<AuthenticationSchemeOpti
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (Request.Headers.TryGetValue("X-User-Id", out var userId))
+        // Tenta ler X-User-Id de forma case-insensitive
+        var userIdHeader = Request.Headers.FirstOrDefault(h => h.Key.Equals("X-User-Id", StringComparison.OrdinalIgnoreCase));
+        
+        if (!string.IsNullOrEmpty(userIdHeader.Value))
         {
-            var claims = new[] { new Claim(ClaimTypes.Name, userId!) };
+            var claims = new[] { new Claim(ClaimTypes.Name, userIdHeader.Value!) };
             var identity = new ClaimsIdentity(claims, "GatewayAuth");
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, "GatewayAuth");
