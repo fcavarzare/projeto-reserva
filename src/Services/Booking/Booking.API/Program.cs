@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using System.Text.Json;
 using System.Security.Claims;
-using System.Security.Principal;
+using Microsoft.AspNetCore.Authentication;
 
 using MassTransit;
 using Booking.Application.Contracts;
@@ -17,7 +17,7 @@ using Booking.API.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database (SQL Server)
+// 1. Database
 builder.Services.AddDbContext<BookingDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -46,10 +46,14 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-// 3. Autenticação agora é via Gateway (Lemos o Header X-User-Id)
+// 3. CONFIGURAÇÃO DE AUTENTICAÇÃO "GATEWAY-READY"
+// Aqui dizemos ao ASP.NET para confiar no que o Gateway enviar
+builder.Services.AddAuthentication("GatewayAuth")
+    .AddScheme<AuthenticationSchemeOptions, GatewayAuthHandler>("GatewayAuth", null);
+
 builder.Services.AddAuthorization();
 
-// 4. Dependency Injection
+// 4. DI
 builder.Services.AddScoped<ISeatRepository, SeatRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<IDistributedLockService, RedisDistributedLockService>();
@@ -69,7 +73,7 @@ builder.Services.AddControllers()
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: new[] { "live" })
     .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "sqlserver", tags: new[] { "ready" })
-    .AddRedis(redisConnectionString, name: "redis", tags: new[] { "ready" });
+    .AddRedis(redisConnectionString, name: "ready");
 
 builder.Services.AddCors(options =>
 {
@@ -78,16 +82,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Middleware para "confiar" no usuário que o Gateway autenticou
-app.Use(async (context, next) =>
-{
-    if (context.Request.Headers.TryGetValue("X-User-Id", out var userId))
-    {
-        var identity = new GenericIdentity(userId!);
-        context.User = new ClaimsPrincipal(identity);
-    }
-    await next();
-});
+app.UseCors("AllowAll");
+app.UseAuthentication(); // Essencial para o [Authorize] funcionar
+app.UseAuthorization();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -95,15 +92,28 @@ using (var scope = app.Services.CreateScope())
     context.Database.EnsureCreated();
 }
 
-app.UseCors("AllowAll");
-app.UseAuthorization();
 app.MapControllers();
-
-app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
-    Predicate = (check) => check.Tags.Contains("live")
-});
-app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
-    Predicate = (check) => check.Tags.Contains("ready")
-});
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = (check) => check.Tags.Contains("live") });
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = (check) => check.Tags.Contains("ready") });
 
 app.Run();
+
+// Handler que transforma o Header X-User-Id em uma identidade válida para o [Authorize]
+public class GatewayAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+{
+    public GatewayAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, System.Text.Encodings.Web.UrlEncoder encoder) 
+        : base(options, logger, encoder) { }
+
+    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    {
+        if (Request.Headers.TryGetValue("X-User-Id", out var userId))
+        {
+            var claims = new[] { new Claim(ClaimTypes.Name, userId!) };
+            var identity = new ClaimsIdentity(claims, "GatewayAuth");
+            var principal = new ClaimsPrincipal(identity);
+            var ticket = new AuthenticationTicket(principal, "GatewayAuth");
+            return Task.FromResult(AuthenticateResult.Success(ticket));
+        }
+        return Task.FromResult(AuthenticateResult.Fail("Header X-User-Id não encontrado."));
+    }
+}
