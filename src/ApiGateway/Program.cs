@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Yarp.ReverseProxy.Transforms;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ValidateIssuer = false,
-            ValidateAudience = false
+            ValidateAudience = false,
+            NameClaimType = ClaimTypes.Name // ESSENCIAL
         };
     });
 
@@ -28,7 +30,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
 });
 
-// 2. YARP com LOGS e Transformação
+// 2. YARP com injeção de Header PROGRAMÁTICA
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms(builderContext =>
@@ -36,18 +38,18 @@ builder.Services.AddReverseProxy()
         builderContext.AddRequestTransform(async transformContext =>
         {
             var user = transformContext.HttpContext.User;
-            var logger = transformContext.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-            
             if (user.Identity?.IsAuthenticated == true)
             {
-                var name = user.Identity.Name ?? user.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value ?? "unknown";
-                logger.LogInformation("Gateway: Autenticado como {User}. Injetando X-User-Id.", name);
-                transformContext.ProxyRequest.Headers.Remove("X-User-Id");
-                transformContext.ProxyRequest.Headers.Add("X-User-Id", name);
-            }
-            else 
-            {
-                logger.LogWarning("Gateway: Requisição para {Path} NÃO autenticada no Gateway.", transformContext.HttpContext.Request.Path);
+                // Busca o nome em múltiplos campos para garantir
+                var name = user.FindFirst(ClaimTypes.Name)?.Value 
+                        ?? user.FindFirst("unique_name")?.Value 
+                        ?? user.Identity.Name;
+
+                if (!string.IsNullOrEmpty(name))
+                {
+                    transformContext.ProxyRequest.Headers.Remove("X-User-Id");
+                    transformContext.ProxyRequest.Headers.Add("X-User-Id", name);
+                }
             }
         });
     });

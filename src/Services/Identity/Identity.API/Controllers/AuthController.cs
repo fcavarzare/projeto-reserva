@@ -67,10 +67,12 @@ public class AuthController : ControllerBase
         var key = Encoding.ASCII.GetBytes(SecretKey);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }),
+            Subject = new ClaimsIdentity(new[] { 
+                new Claim(ClaimTypes.Name, username),
+                new Claim("unique_name", username) // Dupla garantia
+            }),
             Expires = DateTime.UtcNow.AddHours(2),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-            // Removidos Issuer e Audience para compatibilidade total com a validação do Gateway
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
         return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
     }
