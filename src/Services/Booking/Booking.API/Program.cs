@@ -48,8 +48,11 @@ builder.Services.AddMassTransit(x =>
 });
 
 // 3. CONFIGURAÇÃO DE AUTENTICAÇÃO "GATEWAY-READY"
-builder.Services.AddAuthentication("GatewayAuth")
-    .AddScheme<AuthenticationSchemeOptions, GatewayAuthHandler>("GatewayAuth", null);
+builder.Services.AddAuthentication(options => {
+    options.DefaultAuthenticateScheme = "GatewayAuth";
+    options.DefaultChallengeScheme = "GatewayAuth";
+})
+.AddScheme<AuthenticationSchemeOptions, GatewayAuthHandler>("GatewayAuth", null);
 
 builder.Services.AddAuthorization();
 

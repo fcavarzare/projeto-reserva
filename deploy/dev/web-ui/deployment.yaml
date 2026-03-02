@@ -76,24 +76,17 @@ spec:
   - host: projeto-reserva.dev.local
     http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: web-ui-service
-            port:
-              number: 80
-      - path: /admin.html
-        pathType: Exact
-        backend:
-          service:
-            name: web-ui-service
-            port:
-              number: 80
       - path: /api
         pathType: Prefix
         backend:
           service:
             name: api-gateway-service
+            port:
+              number: 80
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: web-ui-service
             port:
               number: 80

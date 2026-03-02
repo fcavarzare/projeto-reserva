@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,9 +28,22 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
 });
 
-// 2. YARP Simples (Headers via JSON)
+// 2. YARP com injeção de Header PROGRAMÁTICA (Mais forte que o JSON)
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTransforms(builderContext =>
+    {
+        builderContext.AddRequestTransform(async transformContext =>
+        {
+            var user = transformContext.HttpContext.User;
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                // Remove qualquer tentativa de fraude externa e coloca o usuário real do Token
+                transformContext.ProxyRequest.Headers.Remove("X-User-Id");
+                transformContext.ProxyRequest.Headers.Add("X-User-Id", user.Identity.Name);
+            }
+        });
+    });
 
 builder.Services.AddCors(options =>
 {
