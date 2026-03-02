@@ -47,12 +47,9 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-// 3. CONFIGURAÇÃO DE AUTENTICAÇÃO "GATEWAY-READY"
-builder.Services.AddAuthentication(options => {
-    options.DefaultAuthenticateScheme = "GatewayAuth";
-    options.DefaultChallengeScheme = "GatewayAuth";
-})
-.AddScheme<AuthenticationSchemeOptions, GatewayAuthHandler>("GatewayAuth", null);
+// 3. AUTENTICAÇÃO SIMPLIFICADA E SEGURA
+builder.Services.AddAuthentication("GatewayAuth")
+    .AddScheme<AuthenticationSchemeOptions, GatewayAuthHandler>("GatewayAuth", null);
 
 builder.Services.AddAuthorization();
 
@@ -101,7 +98,7 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 
 app.Run();
 
-// Handler que transforma o Header X-User-Id em uma identidade válida
+// Handler Robusto
 public class GatewayAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public GatewayAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, System.Text.Encodings.Web.UrlEncoder encoder) 
@@ -109,23 +106,18 @@ public class GatewayAuthHandler : AuthenticationHandler<AuthenticationSchemeOpti
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        // LOG DE PERÍCIA: Vamos ver o que está vindo de verdade
-        var logger = Context.RequestServices.GetRequiredService<ILogger<GatewayAuthHandler>>();
-        foreach (var header in Request.Headers)
+        // Tenta ler X-User-Id de qualquer forma (Maiúsculo ou Minúsculo)
+        if (Request.Headers.TryGetValue("X-User-Id", out var userId) || 
+            Request.Headers.TryGetValue("x-user-id", out userId))
         {
-            logger.LogInformation("Header Recebido: {Key} = {Value}", header.Key, header.Value);
-        }
-
-        var userIdHeader = Request.Headers.FirstOrDefault(h => h.Key.Equals("X-User-Id", StringComparison.OrdinalIgnoreCase));
-        
-        if (!string.IsNullOrEmpty(userIdHeader.Value))
-        {
-            var claims = new[] { new Claim(ClaimTypes.Name, userIdHeader.Value!) };
+            var claims = new[] { new Claim(ClaimTypes.Name, userId.ToString()) };
             var identity = new ClaimsIdentity(claims, "GatewayAuth");
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, "GatewayAuth");
             return Task.FromResult(AuthenticateResult.Success(ticket));
         }
-        return Task.FromResult(AuthenticateResult.Fail("Header X-User-Id não encontrado."));
+        
+        // Se não houver header, falha silenciosamente para o [Authorize] barrar
+        return Task.FromResult(AuthenticateResult.Fail("Header de usuário ausente."));
     }
 }
