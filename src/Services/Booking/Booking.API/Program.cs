@@ -109,7 +109,13 @@ public class GatewayAuthHandler : AuthenticationHandler<AuthenticationSchemeOpti
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        // Tenta ler X-User-Id de forma case-insensitive
+        // LOG DE PERÍCIA: Vamos ver o que está vindo de verdade
+        var logger = Context.RequestServices.GetRequiredService<ILogger<GatewayAuthHandler>>();
+        foreach (var header in Request.Headers)
+        {
+            logger.LogInformation("Header Recebido: {Key} = {Value}", header.Key, header.Value);
+        }
+
         var userIdHeader = Request.Headers.FirstOrDefault(h => h.Key.Equals("X-User-Id", StringComparison.OrdinalIgnoreCase));
         
         if (!string.IsNullOrEmpty(userIdHeader.Value))
