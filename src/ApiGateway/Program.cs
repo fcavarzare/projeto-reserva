@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,21 +27,9 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
 });
 
-// 2. YARP com injeção automática de Header
+// 2. YARP Simples (Headers via JSON)
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
-    .AddTransforms(builderContext =>
-    {
-        builderContext.AddRequestTransform(async transformContext =>
-        {
-            var user = transformContext.HttpContext.User;
-            if (user.Identity?.IsAuthenticated == true)
-            {
-                transformContext.ProxyRequest.Headers.Remove("X-User-Id");
-                transformContext.ProxyRequest.Headers.Add("X-User-Id", user.Identity.Name);
-            }
-        });
-    });
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 builder.Services.AddCors(options =>
 {
