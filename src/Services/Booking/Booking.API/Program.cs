@@ -10,6 +10,7 @@ using StackExchange.Redis;
 using System.Text.Json;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Options;
 
 using MassTransit;
 using Booking.Application.Contracts;
@@ -47,7 +48,6 @@ builder.Services.AddMassTransit(x =>
 });
 
 // 3. CONFIGURAÇÃO DE AUTENTICAÇÃO "GATEWAY-READY"
-// Aqui dizemos ao ASP.NET para confiar no que o Gateway enviar
 builder.Services.AddAuthentication("GatewayAuth")
     .AddScheme<AuthenticationSchemeOptions, GatewayAuthHandler>("GatewayAuth", null);
 
@@ -83,7 +83,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors("AllowAll");
-app.UseAuthentication(); // Essencial para o [Authorize] funcionar
+app.UseAuthentication();
 app.UseAuthorization();
 
 using (var scope = app.Services.CreateScope())
@@ -98,7 +98,7 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 
 app.Run();
 
-// Handler que transforma o Header X-User-Id em uma identidade válida para o [Authorize]
+// Handler que transforma o Header X-User-Id em uma identidade válida
 public class GatewayAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public GatewayAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, System.Text.Encodings.Web.UrlEncoder encoder) 
