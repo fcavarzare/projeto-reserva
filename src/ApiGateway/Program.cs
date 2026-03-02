@@ -28,7 +28,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
 });
 
-// 2. YARP com injeção de Header PROGRAMÁTICA (FORÇADA)
+// 2. YARP com LOGS e Transformação
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms(builderContext =>
@@ -36,11 +36,18 @@ builder.Services.AddReverseProxy()
         builderContext.AddRequestTransform(async transformContext =>
         {
             var user = transformContext.HttpContext.User;
+            var logger = transformContext.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            
             if (user.Identity?.IsAuthenticated == true)
             {
-                // Força o header com o nome do usuário logado
+                var name = user.Identity.Name ?? user.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value ?? "unknown";
+                logger.LogInformation("Gateway: Autenticado como {User}. Injetando X-User-Id.", name);
                 transformContext.ProxyRequest.Headers.Remove("X-User-Id");
-                transformContext.ProxyRequest.Headers.Add("X-User-Id", user.Identity.Name);
+                transformContext.ProxyRequest.Headers.Add("X-User-Id", name);
+            }
+            else 
+            {
+                logger.LogWarning("Gateway: Requisição para {Path} NÃO autenticada no Gateway.", transformContext.HttpContext.Request.Path);
             }
         });
     });

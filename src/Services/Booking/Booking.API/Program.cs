@@ -47,7 +47,7 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-// 3. Autenticação configurada para permitir Health Checks anônimos
+// 3. Autenticação PERMISSIVA para Depuração
 builder.Services.AddAuthentication("GatewayAuth")
     .AddScheme<AuthenticationSchemeOptions, GatewayAuthHandler>("GatewayAuth", null);
 
@@ -83,7 +83,6 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors("AllowAll");
-// IMPORTANTE: UseRouting deve vir antes de UseAuthentication
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -96,35 +95,48 @@ using (var scope = app.Services.CreateScope())
 
 app.MapControllers();
 
-// Health Checks SEMPRE Anônimos (.AllowAnonymous)
-app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { 
-    Predicate = (check) => check.Tags.Contains("live") 
-}).AllowAnonymous();
-
-app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { 
-    Predicate = (check) => check.Tags.Contains("ready") 
-}).AllowAnonymous();
+// Health Checks
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = (check) => check.Tags.Contains("live") }).AllowAnonymous();
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = (check) => check.Tags.Contains("ready") }).AllowAnonymous();
 
 app.Run();
 
-// Handler Robusto que só valida se não for rota de health
+// Handler com LOGS INTENSOS
 public class GatewayAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
+    private readonly ILogger<GatewayAuthHandler> _logger;
     public GatewayAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, System.Text.Encodings.Web.UrlEncoder encoder) 
-        : base(options, logger, encoder) { }
+        : base(options, logger, encoder) {
+            _logger = logger.CreateLogger<GatewayAuthHandler>();
+        }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        // Se a requisição tem o header, autentica
-        if (Request.Headers.TryGetValue("X-User-Id", out var userId) || Request.Headers.TryGetValue("x-user-id", out userId))
+        _logger.LogInformation("--- NOVA REQUISIÇÃO: {Method} {Path} ---", Request.Method, Request.Path);
+        
+        foreach (var header in Request.Headers)
         {
+            _logger.LogInformation("Header: {Key} = {Value}", header.Key, header.Value);
+        }
+
+        if (Request.Headers.TryGetValue("X-User-Id", out var userId))
+        {
+            _logger.LogInformation("SUCESSO: Usuário {User} encontrado no header.", userId);
             var claims = new[] { new Claim(ClaimTypes.Name, userId.ToString()) };
             var identity = new ClaimsIdentity(claims, "GatewayAuth");
-            var principal = new ClaimsPrincipal(identity);
-            var ticket = new AuthenticationTicket(principal, "GatewayAuth");
-            return Task.FromResult(AuthenticateResult.Success(ticket));
+            return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), "GatewayAuth")));
         }
         
-        return Task.FromResult(AuthenticateResult.Fail("Header de usuário ausente."));
+        // MODO PÂNICO: Se for GET /api/movies, deixa passar como 'Guest' para testar o banco
+        if (Request.Path.StartsWithSegments("/api/movies") && Request.Method == "GET")
+        {
+            _logger.LogWarning("AVISO: Header ausente, mas liberando GET /api/movies como Guest para teste.");
+            var claims = new[] { new Claim(ClaimTypes.Name, "Guest") };
+            var identity = new ClaimsIdentity(claims, "GatewayAuth");
+            return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), "GatewayAuth")));
+        }
+
+        _logger.LogError("FALHA: Header X-User-Id não encontrado em rota protegida.");
+        return Task.FromResult(AuthenticateResult.Fail("Header ausente."));
     }
 }
