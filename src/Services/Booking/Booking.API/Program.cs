@@ -47,7 +47,7 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-// 3. AUTENTICAÇÃO SIMPLIFICADA E SEGURA
+// 3. Autenticação configurada para permitir Health Checks anônimos
 builder.Services.AddAuthentication("GatewayAuth")
     .AddScheme<AuthenticationSchemeOptions, GatewayAuthHandler>("GatewayAuth", null);
 
@@ -83,6 +83,8 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors("AllowAll");
+// IMPORTANTE: UseRouting deve vir antes de UseAuthentication
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -93,12 +95,19 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapControllers();
-app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = (check) => check.Tags.Contains("live") });
-app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = (check) => check.Tags.Contains("ready") });
+
+// Health Checks SEMPRE Anônimos (.AllowAnonymous)
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { 
+    Predicate = (check) => check.Tags.Contains("live") 
+}).AllowAnonymous();
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { 
+    Predicate = (check) => check.Tags.Contains("ready") 
+}).AllowAnonymous();
 
 app.Run();
 
-// Handler Robusto
+// Handler Robusto que só valida se não for rota de health
 public class GatewayAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public GatewayAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, System.Text.Encodings.Web.UrlEncoder encoder) 
@@ -106,9 +115,8 @@ public class GatewayAuthHandler : AuthenticationHandler<AuthenticationSchemeOpti
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        // Tenta ler X-User-Id de qualquer forma (Maiúsculo ou Minúsculo)
-        if (Request.Headers.TryGetValue("X-User-Id", out var userId) || 
-            Request.Headers.TryGetValue("x-user-id", out userId))
+        // Se a requisição tem o header, autentica
+        if (Request.Headers.TryGetValue("X-User-Id", out var userId) || Request.Headers.TryGetValue("x-user-id", out userId))
         {
             var claims = new[] { new Claim(ClaimTypes.Name, userId.ToString()) };
             var identity = new ClaimsIdentity(claims, "GatewayAuth");
@@ -117,7 +125,6 @@ public class GatewayAuthHandler : AuthenticationHandler<AuthenticationSchemeOpti
             return Task.FromResult(AuthenticateResult.Success(ticket));
         }
         
-        // Se não houver header, falha silenciosamente para o [Authorize] barrar
         return Task.FromResult(AuthenticateResult.Fail("Header de usuário ausente."));
     }
 }
