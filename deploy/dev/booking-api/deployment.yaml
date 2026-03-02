@@ -29,7 +29,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
       - name: booking-api
-        image: fcavarzare/projeto-reserva:booking-api-d24745a333245fe5d1b43a21c8db18aec91e8b71
+        image: fcavarzare/projeto-reserva:booking-api-4bfc2295c3a87031712f5e0df4df9ef916a91de5
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
