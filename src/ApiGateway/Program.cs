@@ -28,7 +28,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
 });
 
-// 2. YARP com injeção de Header PROGRAMÁTICA (Mais forte que o JSON)
+// 2. YARP com injeção de Header PROGRAMÁTICA (FORÇADA)
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms(builderContext =>
@@ -38,7 +38,7 @@ builder.Services.AddReverseProxy()
             var user = transformContext.HttpContext.User;
             if (user.Identity?.IsAuthenticated == true)
             {
-                // Remove qualquer tentativa de fraude externa e coloca o usuário real do Token
+                // Força o header com o nome do usuário logado
                 transformContext.ProxyRequest.Headers.Remove("X-User-Id");
                 transformContext.ProxyRequest.Headers.Add("X-User-Id", user.Identity.Name);
             }
