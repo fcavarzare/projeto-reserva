@@ -47,7 +47,7 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-// 3. Autenticação Gateway
+// 3. Autenticação Gateway (Agora usando X-UserId sem underline)
 builder.Services.AddAuthentication("GatewayAuth")
     .AddScheme<AuthenticationSchemeOptions, GatewayAuthHandler>("GatewayAuth", null);
 
@@ -85,9 +85,9 @@ var app = builder.Build();
 app.UseCors("AllowAll");
 app.UseRouting();
 
-// AQUI ESTÁ O SEGREDO: Mapeamos o Health Check ANTES da autenticação
-app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = (check) => check.Tags.Contains("live") });
-app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = (check) => check.Tags.Contains("ready") });
+// Health Checks Públicos
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = (check) => check.Tags.Contains("live") }).AllowAnonymous();
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = (check) => check.Tags.Contains("ready") }).AllowAnonymous();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -109,13 +109,14 @@ public class GatewayAuthHandler : AuthenticationHandler<AuthenticationSchemeOpti
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        if (Request.Headers.TryGetValue("X-User-Id", out var userId) || Request.Headers.TryGetValue("x-user-id", out userId))
+        // Tenta ler X-UserId (SEM underline)
+        if (Request.Headers.TryGetValue("X-UserId", out var userId))
         {
             var claims = new[] { new Claim(ClaimTypes.Name, userId.ToString()) };
             var identity = new ClaimsIdentity(claims, "GatewayAuth");
             return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), "GatewayAuth")));
         }
         
-        return Task.FromResult(AuthenticateResult.Fail("Header ausente."));
+        return Task.FromResult(AuthenticateResult.Fail("Header X-UserId ausente."));
     }
 }

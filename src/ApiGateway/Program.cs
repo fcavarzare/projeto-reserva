@@ -21,7 +21,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ValidateIssuer = false,
             ValidateAudience = false,
-            NameClaimType = ClaimTypes.Name // ESSENCIAL
+            NameClaimType = ClaimTypes.Name
         };
     });
 
@@ -30,7 +30,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
 });
 
-// 2. YARP com injeção de Header PROGRAMÁTICA
+// 2. YARP com injeção de Header SEM UNDERLINE
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms(builderContext =>
@@ -40,15 +40,15 @@ builder.Services.AddReverseProxy()
             var user = transformContext.HttpContext.User;
             if (user.Identity?.IsAuthenticated == true)
             {
-                // Busca o nome em múltiplos campos para garantir
                 var name = user.FindFirst(ClaimTypes.Name)?.Value 
                         ?? user.FindFirst("unique_name")?.Value 
                         ?? user.Identity.Name;
 
                 if (!string.IsNullOrEmpty(name))
                 {
-                    transformContext.ProxyRequest.Headers.Remove("X-User-Id");
-                    transformContext.ProxyRequest.Headers.Add("X-User-Id", name);
+                    // Remove Underline para evitar ser deletado por proxies
+                    transformContext.ProxyRequest.Headers.Remove("X-UserId");
+                    transformContext.ProxyRequest.Headers.Add("X-UserId", name);
                 }
             }
         });

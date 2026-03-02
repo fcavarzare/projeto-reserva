@@ -6,7 +6,6 @@ namespace Booking.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Microsoft.AspNetCore.Authorization.Authorize]
 public class MoviesController : ControllerBase
 {
     private readonly BookingDbContext _context;
@@ -17,6 +16,7 @@ public class MoviesController : ControllerBase
     }
 
     [HttpGet]
+    [Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public async Task<IActionResult> GetMovies()
     {
         var movies = await _context.Movies.ToListAsync();
